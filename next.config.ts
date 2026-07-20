@@ -1,7 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    remotePatterns: [
+      // YouTube thumbnails
+      { protocol: 'https', hostname: 'img.youtube.com' },
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      // Cloudinary
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

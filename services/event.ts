@@ -9,6 +9,8 @@ export type EventData = {
   parking: string | null
   dressCode: string | null
   contact: string | null
+  pixKey: string | null
+  qrCodeUrl: string | null
 }
 
 const DEFAULT_EVENT: EventData = {
@@ -20,6 +22,8 @@ const DEFAULT_EVENT: EventData = {
   parking: null,
   dressCode: 'Traje social',
   contact: null,
+  pixKey: null,
+  qrCodeUrl: null,
 }
 
 export async function getEventSettings(): Promise<EventData> {
@@ -36,6 +40,8 @@ export async function getEventSettings(): Promise<EventData> {
       parking: settings.parking ?? null,
       dressCode: settings.dressCode ?? null,
       contact: settings.contact ?? null,
+      pixKey: settings.pixKey ?? null,
+      qrCodeUrl: settings.qrCodeUrl ?? null,
     }
   } catch {
     // DB not yet connected — return defaults so the page always renders
