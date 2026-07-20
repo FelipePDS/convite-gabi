@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Event configuration (singleton row, id = 1)
+// ─────────────────────────────────────────────
+model EventSettings {
+  id          Int      @id @default(1)
+  title       String   @default("Aniversário")
+  description String?  @db.Text
+  eventDate   DateTime
+  address     String
+  mapsUrl     String?
+  parking     String?
+  dressCode   String?
+  contact     String?
+  pixKey      String?
+  qrCodeUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Guests & RSVP
+// ─────────────────────────────────────────────
+enum GuestStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+model Guest {
+  id             String      @id @default(cuid())
+  name           String
+  phone          String
+  guestCount     Int         @default(1)
+  message        String?     @db.Text
+  status         GuestStatus @default(PENDING)
+  invitationCode String?     @unique
+  viewedAt       DateTime?
+  confirmedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Gift registry
+// ─────────────────────────────────────────────
+enum GiftStatus {
+  AVAILABLE
+  RESERVED
+}
+
+model Gift {
+  id               String     @id @default(cuid())
+  name             String
+  description      String?    @db.Text
+  imageUrl         String?
+  purchaseLink     String?
+  status           GiftStatus @default(AVAILABLE)
+  reservedByName   String?
+  reservedByPhone  String?
+  reservedAt       DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Gallery
+// ─────────────────────────────────────────────
+enum GalleryItemType {
+  IMAGE
+  VIDEO
+}
+
+model GalleryItem {
+  id        String          @id @default(cuid())
+  type      GalleryItemType @default(IMAGE)
+  url       String
+  caption   String?
+  order     Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Admin user (NextAuth Credentials)
+// ─────────────────────────────────────────────
+model AdminUser {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  hashedPassword String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
