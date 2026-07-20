@@ -19,9 +19,10 @@ const item: Variants = {
 
 interface HeroSectionProps {
   event: Pick<EventData, 'title' | 'eventDate'>
+  guestName?: string
 }
 
-export function HeroSection({ event }: HeroSectionProps) {
+export function HeroSection({ event, guestName }: HeroSectionProps) {
   const eventDateObj = new Date(event.eventDate)
 
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
@@ -59,12 +60,12 @@ export function HeroSection({ event }: HeroSectionProps) {
         initial="hidden"
         animate="show"
       >
-        {/* Tag line */}
+        {/* Tag line — personalized when guestName is present */}
         <motion.p
           variants={item}
           className="text-primary text-xs font-medium uppercase tracking-[0.35em]"
         >
-          ✦ Você está convidado ✦
+          {guestName ? `✦ Olá, ${guestName}! ✦` : '✦ Você está convidado ✦'}
         </motion.p>
 
         {/* Main title */}
