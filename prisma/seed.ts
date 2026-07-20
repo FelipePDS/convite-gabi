@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../lib/generated/prisma/client'
-import { hash } from 'crypto'
+import bcrypt from 'bcryptjs'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -12,7 +12,7 @@ async function main() {
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@convite.com'
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123'
 
-  const hashedPassword = hash('sha256', adminPassword)
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
 
   await prisma.adminUser.upsert({
     where: { email: adminEmail },
