@@ -1,6 +1,7 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import './globals.css'
 
@@ -16,13 +17,52 @@ const playfair = Playfair_Display({
   display: 'swap',
 })
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const DEFAULT_TITLE = 'Convite — Aniversário da Gabi'
+const DEFAULT_DESCRIPTION = 'Você está convidado para uma celebração especial! Confirme sua presença.'
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fdfcf9' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b0b14' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export const metadata: Metadata = {
   title: {
-    default: 'Convite — Aniversário da Gabi',
+    default: DEFAULT_TITLE,
     template: '%s | Aniversário da Gabi',
   },
-  description: 'Você está convidado para celebrar conosco!',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  description: DEFAULT_DESCRIPTION,
+  metadataBase: new URL(BASE_URL),
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: BASE_URL,
+    siteName: 'Aniversário da Gabi',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: BASE_URL,
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -46,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   )
