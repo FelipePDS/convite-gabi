@@ -1,14 +1,5 @@
-import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
-import { authOptions } from '@/lib/auth'
-
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions)
-
-  // Middleware handles the redirect, but this is a server-side safety net
-  if (!session) {
-    redirect('/admin/login')
-  }
-
+// Root admin layout — auth is handled by middleware + (dashboard)/layout.tsx
+// The login page lives here too, so we must NOT redirect unauthenticated users
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }

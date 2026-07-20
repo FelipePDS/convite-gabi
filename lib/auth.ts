@@ -22,16 +22,35 @@ export const authOptions: NextAuthOptions = {
 
         if (!parsed.success) return null
 
-        const user = await prisma.adminUser.findUnique({
-          where: { email: parsed.data.email },
-        })
+        // ── Development fallback (no database required) ───────────────────
+        // Set ADMIN_EMAIL + ADMIN_PASSWORD in .env.local to use this.
+        if (process.env.NODE_ENV === 'development') {
+          const devEmail = process.env.ADMIN_EMAIL ?? 'admin@convite.com'
+          const devPassword = process.env.ADMIN_PASSWORD ?? 'admin123'
+          if (
+            parsed.data.email === devEmail &&
+            parsed.data.password === devPassword
+          ) {
+            return { id: 'dev-admin', email: devEmail }
+          }
+        }
 
-        if (!user) return null
+        // ── Production: check database ─────────────────────────────────────
+        try {
+          const user = await prisma.adminUser.findUnique({
+            where: { email: parsed.data.email },
+          })
 
-        const passwordsMatch = await bcrypt.compare(parsed.data.password, user.hashedPassword)
-        if (!passwordsMatch) return null
+          if (!user) return null
 
-        return { id: user.id, email: user.email }
+          const passwordsMatch = await bcrypt.compare(parsed.data.password, user.hashedPassword)
+          if (!passwordsMatch) return null
+
+          return { id: user.id, email: user.email }
+        } catch {
+          // DB unavailable — deny login in production, allow dev fallback above
+          return null
+        }
       },
     }),
   ],

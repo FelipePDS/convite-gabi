@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { Gift, ExternalLink, Lock } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -25,12 +24,10 @@ export function GiftCard({ gift, onReserve }: GiftCardProps) {
       {/* Image */}
       <div className="bg-muted relative aspect-square overflow-hidden">
         {gift.imageUrl ? (
-          <Image
+          <img
             src={gift.imageUrl}
             alt={gift.name}
-            fill
-            className={`object-cover transition-transform duration-500 group-hover:scale-105 ${isReserved ? 'opacity-60 grayscale' : ''}`}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${isReserved ? 'opacity-60 grayscale' : ''}`}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
