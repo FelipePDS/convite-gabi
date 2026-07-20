@@ -1,10 +1,17 @@
 import { PrismaClient } from '@/lib/generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
 const createPrismaClient = () => {
-  const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
+  // Explicit Pool with a connection timeout so unreachable DBs fail fast
+  // (Prisma v7 / pg default is 0 = no timeout, which causes pages to hang)
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    connectionTimeoutMillis: 5_000, // throw after 5 s if DB is unreachable
+    idleTimeoutMillis: 10_000,
+    max: 10,
   })
+  const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
 
