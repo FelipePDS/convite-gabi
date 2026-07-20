@@ -96,6 +96,22 @@ export function HeroSection({ event, guestName }: HeroSectionProps) {
         <motion.div variants={item}>
           <CountdownTimer eventDate={event.eventDate} />
         </motion.div>
+
+        {/* CTA buttons */}
+        {/* <motion.div variants={item} className="flex flex-wrap justify-center gap-3">
+          <a
+            href="/#confirmar"
+            className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:scale-105 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Confirmar presença ✦
+          </a>
+          <a
+            href="/#presentes"
+            className="rounded-full border border-white/25 bg-white/10 px-8 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/20"
+          >
+            Ver presentes
+          </a>
+        </motion.div> */}
       </motion.div>
 
       {/* Scroll indicator */}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CheckCircle2, AlertCircle, Heart } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { getGuestByInviteCode, trackInviteView } from '@/services/guests'
 import { getEventSettings } from '@/services/event'
 import { HeroSection } from '@/components/sections/HeroSection'
@@ -66,40 +66,11 @@ export default async function InvitePage({ params }: Props) {
     await trackInviteView(guest.id)
   }
 
-  // ── Already confirmed ─────────────────────────────────────────────────────
-  if (guest.status === 'CONFIRMED') {
-    const formattedDate = new Intl.DateTimeFormat('pt-BR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'America/Sao_Paulo',
-    }).format(new Date(event.eventDate))
-
-    return (
-      <div className="flex min-h-[80vh] flex-col items-center justify-center gap-6 px-4 text-center">
-        <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
-          <CheckCircle2 className="h-8 w-8" />
-        </div>
-        <div className="space-y-2">
-          <h1 className="font-heading text-2xl font-bold">
-            Presença confirmada, {guest.name}!
-          </h1>
-          <p className="text-muted-foreground max-w-sm">
-            Você já confirmou sua presença. Te esperamos no dia{' '}
-            <strong className="text-foreground">{formattedDate}</strong>. 🎉
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <Heart className="text-primary h-4 w-4 fill-current" />
-          <Link href="/" className="text-primary underline-offset-2 hover:underline">
-            Ver detalhes do evento
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  const alreadyConfirmed = guest.status === 'CONFIRMED'
 
   // ── Full personalized invite ───────────────────────────────────────────────
+  // Always show the complete site — confirmed guests see the success card in the
+  // RSVP section instead of the form, but can browse the rest normally.
   return (
     <>
       <HeroSection event={event} guestName={guest.name} />
@@ -113,8 +84,9 @@ export default async function InvitePage({ params }: Props) {
           phone: guest.phone ?? undefined,
           invitationCode: guest.invitationCode,
         }}
+        initialConfirmedName={alreadyConfirmed ? guest.name : undefined}
       />
-      <GiftsSection />
+      <GiftsSection invitationCode={guest.invitationCode} />
       <PixSection event={event} />
     </>
   )

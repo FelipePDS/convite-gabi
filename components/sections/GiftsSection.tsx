@@ -2,7 +2,7 @@ import { SectionReveal } from './SectionReveal'
 import { GiftsGrid } from './GiftsGrid'
 import { getGifts } from '@/services/gifts'
 
-export async function GiftsSection() {
+export async function GiftsSection({ invitationCode }: { invitationCode?: string } = {}) {
   const gifts = await getGifts()
 
   return (
@@ -37,7 +37,7 @@ export async function GiftsSection() {
 
         {/* Grid */}
         <SectionReveal delay={0.2}>
-          <GiftsGrid initialGifts={gifts} />
+          <GiftsGrid initialGifts={gifts} invitationCode={invitationCode} />
         </SectionReveal>
       </div>
     </section>

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { Menu, Sun, Moon, Heart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
@@ -23,7 +22,7 @@ const NAV_LINKS = [
   { href: '/#pix', label: 'PIX' },
 ]
 
-function ThemeToggle() {
+function ThemeToggle({ scrolled }: { scrolled: boolean }) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -31,14 +30,18 @@ function ThemeToggle() {
   if (!mounted) return <div className="h-9 w-9" />
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       aria-label="Alternar tema"
+      className={cn(
+        'flex h-9 w-9 items-center justify-center rounded-md transition-colors',
+        scrolled
+          ? 'text-foreground/70 hover:bg-accent hover:text-foreground'
+          : 'text-white/70 hover:text-white'
+      )}
     >
       {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </Button>
+    </button>
   )
 }
 
@@ -68,7 +71,10 @@ export function Navbar() {
         {/* Brand */}
         <Link
           href="/"
-          className="font-heading flex items-center gap-1.5 text-lg font-semibold tracking-wide"
+          className={cn(
+            'font-heading flex items-center gap-1.5 text-lg font-semibold tracking-wide transition-colors',
+            scrolled ? 'text-foreground' : 'text-white'
+          )}
         >
           <Heart className="text-primary h-4 w-4 fill-current" />
           <span>Gabi</span>
@@ -80,7 +86,12 @@ export function Navbar() {
             <li key={href}>
               <Link
                 href={href}
-                className="text-foreground/70 hover:text-foreground text-sm font-medium transition-colors"
+                className={cn(
+                  'text-sm font-medium transition-colors',
+                  scrolled
+                    ? 'text-foreground/70 hover:text-foreground'
+                    : 'text-white/80 hover:text-white'
+                )}
               >
                 {label}
               </Link>
@@ -90,15 +101,20 @@ export function Navbar() {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-1 md:flex">
-          <ThemeToggle />
+          <ThemeToggle scrolled={scrolled} />
         </div>
 
         {/* Mobile: theme toggle + hamburger */}
         <div className="flex items-center gap-1 md:hidden">
-          <ThemeToggle />
+          <ThemeToggle scrolled={scrolled} />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
-              className="hover:bg-accent flex h-9 w-9 items-center justify-center rounded-md transition-colors"
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-md transition-colors',
+                scrolled
+                  ? 'text-foreground/70 hover:bg-accent hover:text-foreground'
+                  : 'text-white/80 hover:text-white'
+              )}
               aria-label="Abrir menu"
             >
               <Menu className="h-5 w-5" />

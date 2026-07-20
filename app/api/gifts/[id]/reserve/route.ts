@@ -5,6 +5,7 @@ import prisma from '@/lib/db'
 const schema = z.object({
   name: z.string().min(2).max(100),
   phone: z.string().min(10).max(20),
+  invitationCode: z.string().min(4).max(32),
 })
 
 export async function POST(
@@ -28,9 +29,22 @@ export async function POST(
     )
   }
 
-  const { name, phone } = parsed.data
+  const { name, phone, invitationCode } = parsed.data
 
   try {
+    // Verify the invitation code belongs to a known guest
+    const guest = await prisma.guest.findUnique({
+      where: { invitationCode: invitationCode.toUpperCase() },
+      select: { id: true },
+    })
+
+    if (!guest) {
+      return NextResponse.json(
+        { error: 'Código de convite inválido. Verifique o link que você recebeu.' },
+        { status: 403 }
+      )
+    }
+
     await prisma.$transaction(async (tx) => {
       const gift = await tx.gift.findUnique({ where: { id } })
 

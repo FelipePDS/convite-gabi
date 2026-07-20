@@ -1,16 +1,64 @@
 'use client'
 
 import { useState } from 'react'
+import { forwardRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { RsvpSuccess } from './RsvpSuccess'
 import { rsvpSchema, type RsvpFormData } from '@/lib/validations/rsvp'
+import { cn } from '@/lib/utils'
+
+// ── Elegant input primitives ────────────────────────────────────────────────
+
+const inputBase =
+  'w-full border-0 border-b-2 border-border bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors duration-200 focus:border-primary aria-invalid:border-destructive'
+
+const ElegantInput = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(({ className, ...props }, ref) => (
+  <input ref={ref} className={cn(inputBase, className)} {...props} />
+))
+ElegantInput.displayName = 'ElegantInput'
+
+const ElegantTextarea = forwardRef<
+  HTMLTextAreaElement,
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+>(({ className, ...props }, ref) => (
+  <textarea
+    ref={ref}
+    className={cn(inputBase, 'resize-none', className)}
+    {...props}
+  />
+))
+ElegantTextarea.displayName = 'ElegantTextarea'
+
+function Field({
+  id,
+  label,
+  error,
+  children,
+}: {
+  id: string
+  label: React.ReactNode
+  error?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
+      {children}
+      {error && <p className="text-destructive pt-0.5 text-xs">{error}</p>}
+    </div>
+  )
+}
+
+// ── Component ───────────────────────────────────────────────────────────────
 
 interface RsvpFormProps {
   eventDate: string
@@ -20,10 +68,12 @@ interface RsvpFormProps {
     phone?: string
     invitationCode: string
   }
+  /** Guest already confirmed — start directly in the success view */
+  initialConfirmedName?: string
 }
 
-export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
-  const [confirmedName, setConfirmedName] = useState<string | null>(null)
+export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormProps) {
+  const [confirmedName, setConfirmedName] = useState<string | null>(initialConfirmedName ?? null)
 
   const {
     register,
@@ -90,32 +140,30 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
         transition={{ duration: 0.4 }}
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="bg-card border-border w-full max-w-lg space-y-5 rounded-3xl border p-8 shadow-xl"
+        className="w-full max-w-lg space-y-6"
       >
-        <div className="space-y-1">
-          <h3 className="font-heading text-xl font-bold">Confirmar presença</h3>
-          <p className="text-muted-foreground text-sm">
-            Preencha os campos abaixo para confirmar sua presença.
-          </p>
-        </div>
-
         {/* Name */}
-        <div className="space-y-1.5">
-          <Label htmlFor="rsvp-name">Nome completo *</Label>
-          <Input
+        <Field
+          id="rsvp-name"
+          label="Nome completo"
+          error={errors.name?.message}
+        >
+          <ElegantInput
             id="rsvp-name"
             placeholder="Seu nome"
             autoComplete="name"
             aria-invalid={!!errors.name}
             {...register('name')}
           />
-          {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
-        </div>
+        </Field>
 
         {/* Phone */}
-        <div className="space-y-1.5">
-          <Label htmlFor="rsvp-phone">WhatsApp / Telefone *</Label>
-          <Input
+        <Field
+          id="rsvp-phone"
+          label="WhatsApp / Telefone"
+          error={errors.phone?.message}
+        >
+          <ElegantInput
             id="rsvp-phone"
             type="tel"
             placeholder="(11) 91234-5678"
@@ -123,13 +171,15 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
             aria-invalid={!!errors.phone}
             {...register('phone')}
           />
-          {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
-        </div>
+        </Field>
 
         {/* Guest count */}
-        <div className="space-y-1.5">
-          <Label htmlFor="rsvp-guests">Número de acompanhantes *</Label>
-          <Input
+        <Field
+          id="rsvp-guests"
+          label="Número de acompanhantes"
+          error={errors.guestCount?.message}
+        >
+          <ElegantInput
             id="rsvp-guests"
             type="number"
             min={1}
@@ -137,17 +187,15 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
             aria-invalid={!!errors.guestCount}
             {...register('guestCount', { valueAsNumber: true })}
           />
-          {errors.guestCount && (
-            <p className="text-destructive text-xs">{errors.guestCount.message}</p>
-          )}
-        </div>
+        </Field>
 
         {/* Message */}
-        <div className="space-y-1.5">
-          <Label htmlFor="rsvp-message">
-            Mensagem <span className="text-muted-foreground">(opcional)</span>
-          </Label>
-          <Textarea
+        <Field
+          id="rsvp-message"
+          label={<>Mensagem <span className="text-muted-foreground font-normal text-xs">(opcional)</span></>}
+          error={errors.message?.message}
+        >
+          <ElegantTextarea
             id="rsvp-message"
             placeholder="Deixe uma mensagem carinhosa…"
             rows={3}
@@ -155,8 +203,7 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
             aria-invalid={!!errors.message}
             {...register('message')}
           />
-          {errors.message && <p className="text-destructive text-xs">{errors.message.message}</p>}
-        </div>
+        </Field>
 
         {/* Server / root error */}
         {errors.root && (
@@ -168,7 +215,7 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
         {/* Hidden invitation code */}
         <input type="hidden" {...register('invitationCode')} />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting} size="lg">
+        <Button type="submit" className="w-full rounded-full" disabled={isSubmitting} size="lg">
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

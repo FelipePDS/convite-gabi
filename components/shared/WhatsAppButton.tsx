@@ -4,9 +4,10 @@ import { motion } from 'framer-motion'
 
 export function WhatsAppButton() {
   const handleClick = () => {
-    const url = typeof window !== 'undefined' ? window.location.origin : ''
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const rsvpUrl = `${base}/#confirmar`
     const text = encodeURIComponent(
-      `🎉 Você está convidado para uma celebração especial!\nVeja todos os detalhes e confirme sua presença: ${url}`
+      `🎉 Você está convidado para uma celebração especial!\n\nVeja todos os detalhes e confirme sua presença: ${rsvpUrl}`
     )
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank', 'noopener,noreferrer')
   }

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Download, Search, UserPlus, Copy, Check, Share2, Loader2 } from 'lucide-react'
+import { Download, Search, UserPlus, Copy, Check, Share2, Loader2, Link2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -197,6 +197,27 @@ export function GuestsTable({ guests: initialGuests }: GuestsTableProps) {
     [guests, search, statusFilter]
   )
 
+  const [generatingCode, setGeneratingCode] = useState<string | null>(null)
+
+  const handleGenerateInvite = async (guest: Guest) => {
+    setGeneratingCode(guest.id)
+    const res = await fetch(`/api/admin/guests/${guest.id}/invite`, { method: 'POST' })
+    const text = await res.text()
+    const json = text ? JSON.parse(text) : {}
+    setGeneratingCode(null)
+
+    if (!res.ok) {
+      toast.error(json.error ?? 'Erro ao gerar link')
+      return
+    }
+
+    const code: string = json.invitationCode
+    setGuests((prev) =>
+      prev.map((g) => (g.id === guest.id ? { ...g, invitationCode: code } : g))
+    )
+    setShareGuest({ name: guest.name, invitationCode: code })
+  }
+
   const onCreateSubmit = async (data: CreateData) => {
     const res = await fetch('/api/admin/guests', {
       method: 'POST',
@@ -331,15 +352,30 @@ export function GuestsTable({ guests: initialGuests }: GuestsTableProps) {
                         : '—'}
                     </TableCell>
                     <TableCell>
-                      {g.invitationCode && (
+                      {g.invitationCode ? (
+                        // Guest already has a code — share it
                         <button
-                          title="Compartilhar convite"
+                          title="Compartilhar link de convite"
                           onClick={() =>
                             setShareGuest({ name: g.name, invitationCode: g.invitationCode! })
                           }
                           className="text-muted-foreground hover:text-primary rounded p-1 transition-colors"
                         >
                           <Share2 className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        // Guest has no code — generate one
+                        <button
+                          title="Gerar e compartilhar link de convite"
+                          disabled={generatingCode === g.id}
+                          onClick={() => handleGenerateInvite(g)}
+                          className="text-muted-foreground hover:text-primary rounded p-1 transition-colors disabled:opacity-50"
+                        >
+                          {generatingCode === g.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Link2 className="h-4 w-4" />
+                          )}
                         </button>
                       )}
                     </TableCell>

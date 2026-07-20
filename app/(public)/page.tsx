@@ -6,7 +6,7 @@ import { AboutSection } from '@/components/sections/AboutSection'
 import { GallerySection } from '@/components/sections/GallerySection'
 import { GallerySkeleton } from '@/components/sections/GallerySkeleton'
 import { EventInfoSection } from '@/components/sections/EventInfoSection'
-import { RsvpSection } from '@/components/sections/RsvpSection'
+import { InviteLockedSection } from '@/components/sections/InviteLockedSection'
 import { GiftsSection } from '@/components/sections/GiftsSection'
 import { GiftsSkeleton } from '@/components/sections/GiftsSkeleton'
 import { PixSection } from '@/components/sections/PixSection'
@@ -42,7 +42,7 @@ export default async function HomePage() {
         <GallerySection />
       </Suspense>
       <EventInfoSection event={event} />
-      <RsvpSection event={event} />
+      <InviteLockedSection contact={event.contact} />
       <Suspense fallback={<GiftsSkeleton />}>
         <GiftsSection />
       </Suspense>

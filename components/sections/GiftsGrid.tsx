@@ -9,9 +9,10 @@ import type { GiftData } from '@/services/gifts'
 
 interface GiftsGridProps {
   initialGifts: GiftData[]
+  invitationCode?: string
 }
 
-export function GiftsGrid({ initialGifts }: GiftsGridProps) {
+export function GiftsGrid({ initialGifts, invitationCode }: GiftsGridProps) {
   const [gifts, setGifts] = useState<GiftData[]>(initialGifts)
   const [reservingGift, setReservingGift] = useState<GiftData | null>(null)
 
@@ -50,6 +51,7 @@ export function GiftsGrid({ initialGifts }: GiftsGridProps) {
           if (!open) setReservingGift(null)
         }}
         onSuccess={handleReserveSuccess}
+        invitationCode={invitationCode}
       />
     </>
   )

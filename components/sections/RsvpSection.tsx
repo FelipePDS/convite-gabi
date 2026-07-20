@@ -11,9 +11,10 @@ interface RsvpSectionProps {
     phone?: string
     invitationCode: string
   }
+  initialConfirmedName?: string
 }
 
-export function RsvpSection({ event, prefill }: RsvpSectionProps) {
+export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectionProps) {
   return (
     <section
       id="confirmar"
@@ -48,7 +49,7 @@ export function RsvpSection({ event, prefill }: RsvpSectionProps) {
 
         {/* Form */}
         <SectionReveal delay={0.2} className="w-full max-w-lg">
-          <RsvpForm eventDate={event.eventDate} prefill={prefill} />
+          <RsvpForm eventDate={event.eventDate} prefill={prefill} initialConfirmedName={initialConfirmedName} />
         </SectionReveal>
       </div>
     </section>

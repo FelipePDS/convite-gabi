@@ -22,9 +22,11 @@ interface ReserveModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: (giftId: string, reservedByName: string) => void
+  /** Pre-filled invitation code from the invite page */
+  invitationCode?: string
 }
 
-export function ReserveModal({ gift, open, onOpenChange, onSuccess }: ReserveModalProps) {
+export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCode }: ReserveModalProps) {
   const [succeeded, setSucceeded] = useState(false)
 
   const {
@@ -35,6 +37,7 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess }: ReserveMod
     formState: { errors, isSubmitting },
   } = useForm<ReserveGiftData>({
     resolver: zodResolver(reserveGiftSchema),
+    defaultValues: { invitationCode: invitationCode ?? '' },
   })
 
   const handleOpenChange = (next: boolean) => {
@@ -126,6 +129,27 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess }: ReserveMod
                 />
                 {errors.phone && (
                   <p className="text-destructive text-xs">{errors.phone.message}</p>
+                )}
+              </div>
+
+              {/* Invitation code */}
+              <div className="space-y-1.5">
+                <Label htmlFor="reserve-code">
+                  Código de convite *
+                  {invitationCode && (
+                    <span className="text-muted-foreground ml-1 text-xs font-normal">(preenchido)</span>
+                  )}
+                </Label>
+                <Input
+                  id="reserve-code"
+                  placeholder="Ex: A1B2C3D4"
+                  aria-invalid={!!errors.invitationCode}
+                  readOnly={!!invitationCode}
+                  className={invitationCode ? 'bg-muted font-mono text-sm' : 'font-mono text-sm uppercase'}
+                  {...register('invitationCode')}
+                />
+                {errors.invitationCode && (
+                  <p className="text-destructive text-xs">{errors.invitationCode.message}</p>
                 )}
               </div>
 

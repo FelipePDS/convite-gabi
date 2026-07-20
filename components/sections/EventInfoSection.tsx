@@ -14,7 +14,7 @@ interface InfoCardProps {
 function InfoCard({ icon, label, value, delay }: InfoCardProps) {
   return (
     <SectionReveal delay={delay}>
-      <div className="bg-card border-border flex items-start gap-4 rounded-2xl border p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div style={{ alignItems: "center" }} className="bg-card border-border flex items-start gap-4 rounded-2xl border p-6 shadow-sm transition-shadow hover:shadow-md">
         <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
           {icon}
         </div>
