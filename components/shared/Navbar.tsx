@@ -14,12 +14,12 @@ import {
 import { cn } from '@/lib/utils'
 
 const NAV_LINKS = [
-  { href: '/#sobre', label: 'Sobre' },
-  { href: '/#evento', label: 'Evento' },
-  { href: '/#galeria', label: 'Galeria' },
-  { href: '/#confirmar', label: 'Confirmar' },
-  { href: '/#presentes', label: 'Presentes' },
-  { href: '/#pix', label: 'PIX' },
+  { href: '#sobre', label: 'Sobre' },
+  { href: '#evento', label: 'Evento' },
+  { href: '#galeria', label: 'Galeria' },
+  { href: '#confirmar', label: 'Confirmar' },
+  { href: '#presentes', label: 'Presentes' },
+  { href: '#pix', label: 'PIX' },
 ]
 
 function ThemeToggle({ scrolled }: { scrolled: boolean }) {
