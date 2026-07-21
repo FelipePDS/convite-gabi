@@ -19,12 +19,12 @@ export function Footer() {
           <nav aria-label="Links de rodapé">
             <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               {[
-                { href: '/#sobre', label: 'Sobre' },
-                { href: '/#evento', label: 'Evento' },
-                { href: '/#galeria', label: 'Galeria' },
-                { href: '/#confirmar', label: 'Confirmar' },
-                { href: '/#presentes', label: 'Presentes' },
-                { href: '/#pix', label: 'PIX' },
+                { href: '#sobre', label: 'Sobre' },
+                { href: '#evento', label: 'Evento' },
+                { href: '#galeria', label: 'Galeria' },
+                { href: '#confirmar', label: 'Confirmar' },
+                { href: '#presentes', label: 'Presentes' },
+                { href: '#pix', label: 'PIX' },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link
