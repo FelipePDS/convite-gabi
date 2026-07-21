@@ -10,6 +10,10 @@ const createPrismaClient = () => {
     connectionTimeoutMillis: 5_000, // throw after 5 s if DB is unreachable
     idleTimeoutMillis: 10_000,
     max: 10,
+    // Enable SSL for hosted providers (Neon, Supabase) in production
+    ssl: process.env.DATABASE_URL?.includes('sslmode=require')
+      ? { rejectUnauthorized: false }
+      : false,
   })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
