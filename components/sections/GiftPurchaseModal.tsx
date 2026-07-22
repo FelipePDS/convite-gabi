@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Payment, initMercadoPago } from '@mercadopago/sdk-react'
+import type {
+  IAdditionalCardFormData,
+  IPaymentFormData,
+} from '@mercadopago/sdk-react/esm/bricks/payment/type'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import { Check, CheckCircle2, Copy, CreditCard, Loader2, QrCode } from 'lucide-react'
@@ -264,11 +268,10 @@ export function GiftPurchaseModal({
     }
   }
 
-  const handlePaymentSubmit = async (submission: {
-    paymentType?: string
-    selectedPaymentMethod: string
-    formData: Record<string, unknown>
-  }) => {
+  const handlePaymentSubmit = async (
+    submission: IPaymentFormData,
+    _additionalData?: IAdditionalCardFormData | null
+  ) => {
     if (!gift || !buyer) {
       throw new Error('Compra indisponivel nesta pagina.')
     }

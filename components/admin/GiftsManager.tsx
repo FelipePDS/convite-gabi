@@ -67,7 +67,8 @@ const schema = z.object({
   ),
 })
 
-type FormData = z.infer<typeof schema>
+type FormInput = z.input<typeof schema>
+type FormData = z.output<typeof schema>
 
 interface GiftsManagerProps {
   initialGifts: Gift[]
@@ -153,7 +154,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
+  } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
   })
 
