@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import type { AdditionalInfo } from 'mercadopago/dist/clients/payment/create/types'
 import prisma from '@/lib/db'
 import {
   assertMercadoPagoConfigured,
@@ -42,7 +43,12 @@ const formDataSchema = z
           .optional(),
       })
       .passthrough(),
-    additional_info: z.unknown().optional(),
+    additional_info: z
+      .custom<AdditionalInfo>(
+        (value) => value == null || (typeof value === 'object' && !Array.isArray(value)),
+        'additional_info invalido'
+      )
+      .optional(),
   })
   .passthrough()
 
@@ -198,7 +204,6 @@ export async function POST(
         transaction_amount: purchaseContext.gift.price ?? undefined,
         description: `Presente: ${purchaseContext.gift.name}`,
         payment_method_id: parsed.data.formData.payment_method_id,
-        payment_method_option_id: parsed.data.formData.payment_method_option_id,
         token: parsed.data.formData.token,
         installments: parsed.data.formData.installments,
         issuer_id:
