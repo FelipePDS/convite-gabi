@@ -8,6 +8,7 @@ const schema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().max(2000).optional(),
   eventDate: z.string().datetime(),
+  venueName: z.string().max(200).optional(),
   address: z.string().min(1).max(300),
   mapsUrl: z.string().url().optional().or(z.literal('')),
   parking: z.string().max(200).optional(),
@@ -38,7 +39,7 @@ export async function PUT(req: Request) {
   if (!parsed.success)
     return NextResponse.json({ error: 'Invalid', details: parsed.error.flatten() }, { status: 422 })
 
-  const { title, description, eventDate, address, mapsUrl, parking, dressCode, contact, pixKey, qrCodeUrl } =
+  const { title, description, eventDate, venueName, address, mapsUrl, parking, dressCode, contact, pixKey, qrCodeUrl } =
     parsed.data
 
   try {
@@ -47,8 +48,7 @@ export async function PUT(req: Request) {
       update: {
         title,
         description: description || null,
-        eventDate: new Date(eventDate),
-        address,
+        eventDate: new Date(eventDate),        venueName: venueName || null,        address,
         mapsUrl: mapsUrl || null,
         parking: parking || null,
         dressCode: dressCode || null,
@@ -60,8 +60,7 @@ export async function PUT(req: Request) {
         id: 1,
         title,
         description: description || null,
-        eventDate: new Date(eventDate),
-        address,
+        eventDate: new Date(eventDate),        venueName: venueName || null,        address,
         mapsUrl: mapsUrl || null,
         parking: parking || null,
         dressCode: dressCode || null,

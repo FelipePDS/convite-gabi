@@ -11,6 +11,7 @@
 export type * from './models/EventSettings'
 export type * from './models/Guest'
 export type * from './models/Gift'
+export type * from './models/GiftPurchase'
 export type * from './models/GalleryItem'
 export type * from './models/AdminUser'
 export type * from './commonInputTypes'

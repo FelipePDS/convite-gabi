@@ -8,7 +8,7 @@ const schema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).optional(),
   imageUrl: z.string().optional(),
-  purchaseLink: z.string().optional(),
+  price: z.coerce.number().min(0).optional().nullable(),
   status: z.enum(['AVAILABLE', 'RESERVED']).optional(),
 })
 
@@ -29,7 +29,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: {
         ...parsed.data,
         imageUrl: parsed.data.imageUrl || null,
-        purchaseLink: parsed.data.purchaseLink || null,
         description: parsed.data.description || null,
         // Reset reservation when marking as AVAILABLE
         ...(parsed.data.status === 'AVAILABLE' && {

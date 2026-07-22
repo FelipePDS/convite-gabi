@@ -39,6 +39,7 @@ export type EventSettingsMinAggregateOutputType = {
   title: string | null
   description: string | null
   eventDate: Date | null
+  venueName: string | null
   address: string | null
   mapsUrl: string | null
   parking: string | null
@@ -55,6 +56,7 @@ export type EventSettingsMaxAggregateOutputType = {
   title: string | null
   description: string | null
   eventDate: Date | null
+  venueName: string | null
   address: string | null
   mapsUrl: string | null
   parking: string | null
@@ -71,6 +73,7 @@ export type EventSettingsCountAggregateOutputType = {
   title: number
   description: number
   eventDate: number
+  venueName: number
   address: number
   mapsUrl: number
   parking: number
@@ -97,6 +100,7 @@ export type EventSettingsMinAggregateInputType = {
   title?: true
   description?: true
   eventDate?: true
+  venueName?: true
   address?: true
   mapsUrl?: true
   parking?: true
@@ -113,6 +117,7 @@ export type EventSettingsMaxAggregateInputType = {
   title?: true
   description?: true
   eventDate?: true
+  venueName?: true
   address?: true
   mapsUrl?: true
   parking?: true
@@ -129,6 +134,7 @@ export type EventSettingsCountAggregateInputType = {
   title?: true
   description?: true
   eventDate?: true
+  venueName?: true
   address?: true
   mapsUrl?: true
   parking?: true
@@ -232,6 +238,7 @@ export type EventSettingsGroupByOutputType = {
   title: string
   description: string | null
   eventDate: Date
+  venueName: string | null
   address: string
   mapsUrl: string | null
   parking: string | null
@@ -271,6 +278,7 @@ export type EventSettingsWhereInput = {
   title?: Prisma.StringFilter<"EventSettings"> | string
   description?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   eventDate?: Prisma.DateTimeFilter<"EventSettings"> | Date | string
+  venueName?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   address?: Prisma.StringFilter<"EventSettings"> | string
   mapsUrl?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   parking?: Prisma.StringNullableFilter<"EventSettings"> | string | null
@@ -287,6 +295,7 @@ export type EventSettingsOrderByWithRelationInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   eventDate?: Prisma.SortOrder
+  venueName?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrder
   mapsUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   parking?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -306,6 +315,7 @@ export type EventSettingsWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"EventSettings"> | string
   description?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   eventDate?: Prisma.DateTimeFilter<"EventSettings"> | Date | string
+  venueName?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   address?: Prisma.StringFilter<"EventSettings"> | string
   mapsUrl?: Prisma.StringNullableFilter<"EventSettings"> | string | null
   parking?: Prisma.StringNullableFilter<"EventSettings"> | string | null
@@ -322,6 +332,7 @@ export type EventSettingsOrderByWithAggregationInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   eventDate?: Prisma.SortOrder
+  venueName?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrder
   mapsUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   parking?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -346,6 +357,7 @@ export type EventSettingsScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"EventSettings"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"EventSettings"> | string | null
   eventDate?: Prisma.DateTimeWithAggregatesFilter<"EventSettings"> | Date | string
+  venueName?: Prisma.StringNullableWithAggregatesFilter<"EventSettings"> | string | null
   address?: Prisma.StringWithAggregatesFilter<"EventSettings"> | string
   mapsUrl?: Prisma.StringNullableWithAggregatesFilter<"EventSettings"> | string | null
   parking?: Prisma.StringNullableWithAggregatesFilter<"EventSettings"> | string | null
@@ -362,6 +374,7 @@ export type EventSettingsCreateInput = {
   title?: string
   description?: string | null
   eventDate: Date | string
+  venueName?: string | null
   address: string
   mapsUrl?: string | null
   parking?: string | null
@@ -378,6 +391,7 @@ export type EventSettingsUncheckedCreateInput = {
   title?: string
   description?: string | null
   eventDate: Date | string
+  venueName?: string | null
   address: string
   mapsUrl?: string | null
   parking?: string | null
@@ -394,6 +408,7 @@ export type EventSettingsUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.StringFieldUpdateOperationsInput | string
   mapsUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parking?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -410,6 +425,7 @@ export type EventSettingsUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.StringFieldUpdateOperationsInput | string
   mapsUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parking?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -426,6 +442,7 @@ export type EventSettingsCreateManyInput = {
   title?: string
   description?: string | null
   eventDate: Date | string
+  venueName?: string | null
   address: string
   mapsUrl?: string | null
   parking?: string | null
@@ -442,6 +459,7 @@ export type EventSettingsUpdateManyMutationInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.StringFieldUpdateOperationsInput | string
   mapsUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parking?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -458,6 +476,7 @@ export type EventSettingsUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.StringFieldUpdateOperationsInput | string
   mapsUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   parking?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -474,6 +493,7 @@ export type EventSettingsCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   eventDate?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
   address?: Prisma.SortOrder
   mapsUrl?: Prisma.SortOrder
   parking?: Prisma.SortOrder
@@ -494,6 +514,7 @@ export type EventSettingsMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   eventDate?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
   address?: Prisma.SortOrder
   mapsUrl?: Prisma.SortOrder
   parking?: Prisma.SortOrder
@@ -510,6 +531,7 @@ export type EventSettingsMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   eventDate?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
   address?: Prisma.SortOrder
   mapsUrl?: Prisma.SortOrder
   parking?: Prisma.SortOrder
@@ -552,6 +574,7 @@ export type EventSettingsSelect<ExtArgs extends runtime.Types.Extensions.Interna
   title?: boolean
   description?: boolean
   eventDate?: boolean
+  venueName?: boolean
   address?: boolean
   mapsUrl?: boolean
   parking?: boolean
@@ -568,6 +591,7 @@ export type EventSettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   title?: boolean
   description?: boolean
   eventDate?: boolean
+  venueName?: boolean
   address?: boolean
   mapsUrl?: boolean
   parking?: boolean
@@ -584,6 +608,7 @@ export type EventSettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   title?: boolean
   description?: boolean
   eventDate?: boolean
+  venueName?: boolean
   address?: boolean
   mapsUrl?: boolean
   parking?: boolean
@@ -600,6 +625,7 @@ export type EventSettingsSelectScalar = {
   title?: boolean
   description?: boolean
   eventDate?: boolean
+  venueName?: boolean
   address?: boolean
   mapsUrl?: boolean
   parking?: boolean
@@ -611,7 +637,7 @@ export type EventSettingsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type EventSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "eventDate" | "address" | "mapsUrl" | "parking" | "dressCode" | "contact" | "pixKey" | "qrCodeUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["eventSettings"]>
+export type EventSettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "eventDate" | "venueName" | "address" | "mapsUrl" | "parking" | "dressCode" | "contact" | "pixKey" | "qrCodeUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["eventSettings"]>
 
 export type $EventSettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EventSettings"
@@ -621,6 +647,7 @@ export type $EventSettingsPayload<ExtArgs extends runtime.Types.Extensions.Inter
     title: string
     description: string | null
     eventDate: Date
+    venueName: string | null
     address: string
     mapsUrl: string | null
     parking: string | null
@@ -1057,6 +1084,7 @@ export interface EventSettingsFieldRefs {
   readonly title: Prisma.FieldRef<"EventSettings", 'String'>
   readonly description: Prisma.FieldRef<"EventSettings", 'String'>
   readonly eventDate: Prisma.FieldRef<"EventSettings", 'DateTime'>
+  readonly venueName: Prisma.FieldRef<"EventSettings", 'String'>
   readonly address: Prisma.FieldRef<"EventSettings", 'String'>
   readonly mapsUrl: Prisma.FieldRef<"EventSettings", 'String'>
   readonly parking: Prisma.FieldRef<"EventSettings", 'String'>

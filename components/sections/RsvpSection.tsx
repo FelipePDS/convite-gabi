@@ -41,8 +41,10 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
 
           <SectionReveal delay={0.15}>
             <p className="text-muted-foreground mt-4 max-w-md">
-              Sua presença é muito importante para nós. Confirme até{' '}
-              <strong>10 dias antes</strong> do evento.
+              Sua presença tornará esse dia ainda mais especial para nós.
+              <br />
+              Pedimos, por gentileza, que confirme sua presença até o dia{' '}
+              <strong>01 de setembro</strong>, pois o buffet será contratado de acordo com o número de convidados confirmados.
             </p>
           </SectionReveal>
         </div>

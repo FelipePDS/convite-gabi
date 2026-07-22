@@ -14,6 +14,7 @@ const schema = z.object({
   title: z.string().min(1, 'Obrigatório').max(100),
   description: z.string().max(2000).optional(),
   eventDate: z.string().min(1, 'Obrigatório'),
+  venueName: z.string().max(200).optional(),
   address: z.string().min(1, 'Obrigatório').max(300),
   mapsUrl: z.string().url('URL inválida').optional().or(z.literal('')),
   parking: z.string().max(200).optional(),
@@ -76,6 +77,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
       </div>
 
       {field('eventDate', 'Data e hora do evento *', { type: 'datetime-local' })}
+      {field('venueName', 'Nome do local / salão', { placeholder: 'Ex: Salão Bella Vida' })}
       {field('address', 'Endereço *')}
       {field('mapsUrl', 'URL do Google Maps (embed)', { placeholder: 'https://maps.google.com/…' })}
       {field('parking', 'Estacionamento')}

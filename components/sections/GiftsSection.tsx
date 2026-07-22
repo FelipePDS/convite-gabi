@@ -1,8 +1,12 @@
 import { SectionReveal } from './SectionReveal'
-import { GiftsGrid } from './GiftsGrid'
+import { GiftsGrid, type GiftBuyer } from './GiftsGrid'
 import { getGifts } from '@/services/gifts'
 
-export async function GiftsSection({ invitationCode }: { invitationCode?: string } = {}) {
+interface GiftsSectionProps {
+  buyer?: GiftBuyer | null
+}
+
+export async function GiftsSection({ buyer = null }: GiftsSectionProps = {}) {
   const gifts = await getGifts()
 
   return (
@@ -12,10 +16,9 @@ export async function GiftsSection({ invitationCode }: { invitationCode?: string
       aria-labelledby="gifts-title"
     >
       <div className="mx-auto max-w-6xl px-4 md:px-8">
-        {/* Heading */}
         <SectionReveal>
           <p className="text-primary mb-3 text-xs font-medium uppercase tracking-[0.3em]">
-            ✦ Lista de presentes ✦
+            ✦ Presentes ✦
           </p>
         </SectionReveal>
 
@@ -29,15 +32,13 @@ export async function GiftsSection({ invitationCode }: { invitationCode?: string
         </SectionReveal>
 
         <SectionReveal delay={0.15}>
-          <p className="text-muted-foreground mb-12 max-w-lg">
-            Se quiser presentear, escolha um item abaixo e reserve seu nome.
-            O presente pode ser entregue no dia do evento ou combinado separadamente.
+          <p className="text-muted-foreground mb-12 max-w-2xl">
+            Escolha um item abaixo para presentear a Gaby no seu aniversário de 15 anos.
           </p>
         </SectionReveal>
 
-        {/* Grid */}
         <SectionReveal delay={0.2}>
-          <GiftsGrid initialGifts={gifts} invitationCode={invitationCode} />
+          <GiftsGrid initialGifts={gifts} buyer={buyer} />
         </SectionReveal>
       </div>
     </section>

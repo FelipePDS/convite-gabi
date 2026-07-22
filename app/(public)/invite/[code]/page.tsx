@@ -20,12 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guest = await getGuestByInviteCode(code)
 
   if (!guest) {
-    return { title: 'Convite inválido', robots: { index: false } }
+    return { title: 'Convite invalido', robots: { index: false } }
   }
 
   return {
     title: `Convite para ${guest.name}`,
-    description: 'Você foi convidado para uma celebração especial!',
+    description: 'Voce foi convidado para uma celebracao especial!',
     robots: { index: false, follow: false },
   }
 }
@@ -37,7 +37,6 @@ export default async function InvitePage({ params }: Props) {
     getEventSettings(),
   ])
 
-  // ── Invalid code ──────────────────────────────────────────────────────────
   if (!guest) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center gap-6 px-4 text-center">
@@ -45,32 +44,36 @@ export default async function InvitePage({ params }: Props) {
           <AlertCircle className="h-8 w-8" />
         </div>
         <div className="space-y-2">
-          <h1 className="font-heading text-2xl font-bold">Convite não encontrado</h1>
+          <h1 className="font-heading text-2xl font-bold">Convite nao encontrado</h1>
           <p className="text-muted-foreground max-w-sm">
-            Este link de convite é inválido ou já expirou. Você ainda pode confirmar
-            presença pela página principal.
+            Este link de convite e invalido ou ja expirou. Voce ainda pode confirmar
+            presenca pela pagina principal.
           </p>
         </div>
         <Link
           href="/#confirmar"
           className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-xl px-6 text-sm font-medium transition-colors"
         >
-          Confirmar presença
+          Confirmar presenca
         </Link>
       </div>
     )
   }
 
-  // ── Track first view (best-effort, non-blocking) ───────────────────────────
   if (!guest.viewedAt) {
     await trackInviteView(guest.id)
   }
 
   const alreadyConfirmed = guest.status === 'CONFIRMED'
+  const giftBuyer =
+    guest.invitationCode && guest.phone
+      ? {
+          name: guest.name,
+          phone: guest.phone,
+          invitationCode: guest.invitationCode,
+        }
+      : null
 
-  // ── Full personalized invite ───────────────────────────────────────────────
-  // Always show the complete site — confirmed guests see the success card in the
-  // RSVP section instead of the form, but can browse the rest normally.
   return (
     <>
       <HeroSection event={event} guestName={guest.name} />
@@ -86,8 +89,10 @@ export default async function InvitePage({ params }: Props) {
         }}
         initialConfirmedName={alreadyConfirmed ? guest.name : undefined}
       />
-      <GiftsSection invitationCode={guest.invitationCode} />
-      <PixSection event={event} />
+      <GiftsSection
+        buyer={giftBuyer}
+      />
+      {/* <PixSection event={event} /> */}
     </>
   )
 }

@@ -12,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div className="font-heading flex items-center gap-2 text-xl font-semibold">
             <Heart className="text-primary h-5 w-5 fill-current" />
-            <span>Aniversário da Gabi</span>
+            <span>Gaby 15 anos</span>
           </div>
 
           {/* Nav links */}

@@ -264,6 +264,7 @@ export type GuestWhereInput = {
   confirmedAt?: Prisma.DateTimeNullableFilter<"Guest"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Guest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Guest"> | Date | string
+  giftPurchases?: Prisma.GiftPurchaseListRelationFilter
 }
 
 export type GuestOrderByWithRelationInput = {
@@ -278,6 +279,7 @@ export type GuestOrderByWithRelationInput = {
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  giftPurchases?: Prisma.GiftPurchaseOrderByRelationAggregateInput
 }
 
 export type GuestWhereUniqueInput = Prisma.AtLeast<{
@@ -295,6 +297,7 @@ export type GuestWhereUniqueInput = Prisma.AtLeast<{
   confirmedAt?: Prisma.DateTimeNullableFilter<"Guest"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Guest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Guest"> | Date | string
+  giftPurchases?: Prisma.GiftPurchaseListRelationFilter
 }, "id" | "invitationCode">
 
 export type GuestOrderByWithAggregationInput = {
@@ -345,6 +348,7 @@ export type GuestCreateInput = {
   confirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  giftPurchases?: Prisma.GiftPurchaseCreateNestedManyWithoutGuestInput
 }
 
 export type GuestUncheckedCreateInput = {
@@ -359,6 +363,7 @@ export type GuestUncheckedCreateInput = {
   confirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  giftPurchases?: Prisma.GiftPurchaseUncheckedCreateNestedManyWithoutGuestInput
 }
 
 export type GuestUpdateInput = {
@@ -373,6 +378,7 @@ export type GuestUpdateInput = {
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  giftPurchases?: Prisma.GiftPurchaseUpdateManyWithoutGuestNestedInput
 }
 
 export type GuestUncheckedUpdateInput = {
@@ -387,6 +393,7 @@ export type GuestUncheckedUpdateInput = {
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  giftPurchases?: Prisma.GiftPurchaseUncheckedUpdateManyWithoutGuestNestedInput
 }
 
 export type GuestCreateManyInput = {
@@ -481,6 +488,11 @@ export type GuestSumOrderByAggregateInput = {
   guestCount?: Prisma.SortOrder
 }
 
+export type GuestScalarRelationFilter = {
+  is?: Prisma.GuestWhereInput
+  isNot?: Prisma.GuestWhereInput
+}
+
 export type EnumGuestStatusFieldUpdateOperationsInput = {
   set?: $Enums.GuestStatus
 }
@@ -489,6 +501,121 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
+export type GuestCreateNestedOneWithoutGiftPurchasesInput = {
+  create?: Prisma.XOR<Prisma.GuestCreateWithoutGiftPurchasesInput, Prisma.GuestUncheckedCreateWithoutGiftPurchasesInput>
+  connectOrCreate?: Prisma.GuestCreateOrConnectWithoutGiftPurchasesInput
+  connect?: Prisma.GuestWhereUniqueInput
+}
+
+export type GuestUpdateOneRequiredWithoutGiftPurchasesNestedInput = {
+  create?: Prisma.XOR<Prisma.GuestCreateWithoutGiftPurchasesInput, Prisma.GuestUncheckedCreateWithoutGiftPurchasesInput>
+  connectOrCreate?: Prisma.GuestCreateOrConnectWithoutGiftPurchasesInput
+  upsert?: Prisma.GuestUpsertWithoutGiftPurchasesInput
+  connect?: Prisma.GuestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GuestUpdateToOneWithWhereWithoutGiftPurchasesInput, Prisma.GuestUpdateWithoutGiftPurchasesInput>, Prisma.GuestUncheckedUpdateWithoutGiftPurchasesInput>
+}
+
+export type GuestCreateWithoutGiftPurchasesInput = {
+  id?: string
+  name: string
+  phone: string
+  guestCount?: number
+  message?: string | null
+  status?: $Enums.GuestStatus
+  invitationCode?: string | null
+  viewedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type GuestUncheckedCreateWithoutGiftPurchasesInput = {
+  id?: string
+  name: string
+  phone: string
+  guestCount?: number
+  message?: string | null
+  status?: $Enums.GuestStatus
+  invitationCode?: string | null
+  viewedAt?: Date | string | null
+  confirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type GuestCreateOrConnectWithoutGiftPurchasesInput = {
+  where: Prisma.GuestWhereUniqueInput
+  create: Prisma.XOR<Prisma.GuestCreateWithoutGiftPurchasesInput, Prisma.GuestUncheckedCreateWithoutGiftPurchasesInput>
+}
+
+export type GuestUpsertWithoutGiftPurchasesInput = {
+  update: Prisma.XOR<Prisma.GuestUpdateWithoutGiftPurchasesInput, Prisma.GuestUncheckedUpdateWithoutGiftPurchasesInput>
+  create: Prisma.XOR<Prisma.GuestCreateWithoutGiftPurchasesInput, Prisma.GuestUncheckedCreateWithoutGiftPurchasesInput>
+  where?: Prisma.GuestWhereInput
+}
+
+export type GuestUpdateToOneWithWhereWithoutGiftPurchasesInput = {
+  where?: Prisma.GuestWhereInput
+  data: Prisma.XOR<Prisma.GuestUpdateWithoutGiftPurchasesInput, Prisma.GuestUncheckedUpdateWithoutGiftPurchasesInput>
+}
+
+export type GuestUpdateWithoutGiftPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  guestCount?: Prisma.IntFieldUpdateOperationsInput | number
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumGuestStatusFieldUpdateOperationsInput | $Enums.GuestStatus
+  invitationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  viewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GuestUncheckedUpdateWithoutGiftPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  guestCount?: Prisma.IntFieldUpdateOperationsInput | number
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumGuestStatusFieldUpdateOperationsInput | $Enums.GuestStatus
+  invitationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  viewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type GuestCountOutputType
+ */
+
+export type GuestCountOutputType = {
+  giftPurchases: number
+}
+
+export type GuestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  giftPurchases?: boolean | GuestCountOutputTypeCountGiftPurchasesArgs
+}
+
+/**
+ * GuestCountOutputType without action
+ */
+export type GuestCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GuestCountOutputType
+   */
+  select?: Prisma.GuestCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * GuestCountOutputType without action
+ */
+export type GuestCountOutputTypeCountGiftPurchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GiftPurchaseWhereInput
+}
 
 
 export type GuestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -503,6 +630,8 @@ export type GuestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   confirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  giftPurchases?: boolean | Prisma.Guest$giftPurchasesArgs<ExtArgs>
+  _count?: boolean | Prisma.GuestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["guest"]>
 
 export type GuestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -548,10 +677,18 @@ export type GuestSelectScalar = {
 }
 
 export type GuestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "phone" | "guestCount" | "message" | "status" | "invitationCode" | "viewedAt" | "confirmedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["guest"]>
+export type GuestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  giftPurchases?: boolean | Prisma.Guest$giftPurchasesArgs<ExtArgs>
+  _count?: boolean | Prisma.GuestCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type GuestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type GuestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $GuestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Guest"
-  objects: {}
+  objects: {
+    giftPurchases: Prisma.$GiftPurchasePayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
@@ -958,6 +1095,7 @@ readonly fields: GuestFieldRefs;
  */
 export interface Prisma__GuestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  giftPurchases<T extends Prisma.Guest$giftPurchasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Guest$giftPurchasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GiftPurchasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1015,6 +1153,10 @@ export type GuestFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * Filter, which Guest to fetch.
    */
   where: Prisma.GuestWhereUniqueInput
@@ -1033,6 +1175,10 @@ export type GuestFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * Filter, which Guest to fetch.
    */
   where: Prisma.GuestWhereUniqueInput
@@ -1050,6 +1196,10 @@ export type GuestFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Guest
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
   /**
    * Filter, which Guest to fetch.
    */
@@ -1099,6 +1249,10 @@ export type GuestFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * Filter, which Guest to fetch.
    */
   where?: Prisma.GuestWhereInput
@@ -1146,6 +1300,10 @@ export type GuestFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Guest
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
   /**
    * Filter, which Guests to fetch.
    */
@@ -1195,6 +1353,10 @@ export type GuestCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * The data needed to create a Guest.
    */
   data: Prisma.XOR<Prisma.GuestCreateInput, Prisma.GuestUncheckedCreateInput>
@@ -1242,6 +1404,10 @@ export type GuestUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    * Omit specific fields from the Guest
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
   /**
    * The data needed to update a Guest.
    */
@@ -1309,6 +1475,10 @@ export type GuestUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * The filter to search for the Guest to update in case it exists.
    */
   where: Prisma.GuestWhereUniqueInput
@@ -1335,6 +1505,10 @@ export type GuestDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
+  /**
    * Filter which Guest to delete.
    */
   where: Prisma.GuestWhereUniqueInput
@@ -1355,6 +1529,30 @@ export type GuestDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
+ * Guest.giftPurchases
+ */
+export type Guest$giftPurchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GiftPurchase
+   */
+  select?: Prisma.GiftPurchaseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GiftPurchase
+   */
+  omit?: Prisma.GiftPurchaseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftPurchaseInclude<ExtArgs> | null
+  where?: Prisma.GiftPurchaseWhereInput
+  orderBy?: Prisma.GiftPurchaseOrderByWithRelationInput | Prisma.GiftPurchaseOrderByWithRelationInput[]
+  cursor?: Prisma.GiftPurchaseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GiftPurchaseScalarFieldEnum | Prisma.GiftPurchaseScalarFieldEnum[]
+}
+
+/**
  * Guest without action
  */
 export type GuestDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1366,4 +1564,8 @@ export type GuestDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the Guest
    */
   omit?: Prisma.GuestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GuestInclude<ExtArgs> | null
 }

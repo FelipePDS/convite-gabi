@@ -5,9 +5,8 @@ export type GiftData = {
   name: string
   description: string | null
   imageUrl: string | null
-  purchaseLink: string | null
+  price: number | null
   status: 'AVAILABLE' | 'RESERVED'
-  reservedByName: string | null
 }
 
 export async function getGifts(): Promise<GiftData[]> {
@@ -19,20 +18,18 @@ export async function getGifts(): Promise<GiftData[]> {
         name: true,
         description: true,
         imageUrl: true,
-        purchaseLink: true,
+        price: true,
         status: true,
-        reservedByName: true,
       },
     })
 
-    return gifts.map((g) => ({
-      id: g.id,
-      name: g.name,
-      description: g.description ?? null,
-      imageUrl: g.imageUrl ?? null,
-      purchaseLink: g.purchaseLink ?? null,
-      status: g.status as 'AVAILABLE' | 'RESERVED',
-      reservedByName: g.reservedByName ?? null,
+    return gifts.map((gift) => ({
+      id: gift.id,
+      name: gift.name,
+      description: gift.description ?? null,
+      imageUrl: gift.imageUrl ?? null,
+      price: gift.price ?? null,
+      status: gift.status as 'AVAILABLE' | 'RESERVED',
     }))
   } catch {
     return []

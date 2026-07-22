@@ -10,9 +10,8 @@ export async function GET() {
         name: true,
         description: true,
         imageUrl: true,
-        purchaseLink: true,
+        price: true,
         status: true,
-        reservedByName: true,
       },
     })
 

@@ -1,29 +1,46 @@
 'use client'
 
-import { Gift, ExternalLink, Lock } from 'lucide-react'
+import { Gift } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { GiftData } from '@/services/gifts'
 
+const formatBRL = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
 interface GiftCardProps {
   gift: GiftData
-  onReserve: (gift: GiftData) => void
+  disabled?: boolean
+  viewMode?: 'grid' | 'list'
+  onOpen: (gift: GiftData) => void
 }
 
-export function GiftCard({ gift, onReserve }: GiftCardProps) {
+export function GiftCard({
+  gift,
+  disabled = false,
+  viewMode = 'grid',
+  onOpen,
+}: GiftCardProps) {
   const isReserved = gift.status === 'RESERVED'
+  const isList = viewMode === 'list'
 
   return (
     <motion.article
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-border group flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md"
+      className={`bg-card border-border group overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-md ${
+        isList ? 'flex flex-row items-stretch' : 'flex flex-col'
+      }`}
     >
-      {/* Image */}
-      <div className="bg-muted relative aspect-square overflow-hidden">
+      <div
+        className={`bg-muted relative overflow-hidden ${
+          isList ? 'w-28 shrink-0 sm:w-36' : 'aspect-square'
+        }`}
+      >
         {gift.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={gift.imageUrl}
             alt={gift.name}
@@ -35,62 +52,69 @@ export function GiftCard({ gift, onReserve }: GiftCardProps) {
           </div>
         )}
 
-        {/* Reserved overlay badge */}
         {isReserved && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-            <div className="flex items-center gap-1.5 rounded-full bg-black/60 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
-              <Lock className="h-3.5 w-3.5" />
+            <span className="rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
               Reservado
-            </div>
+            </span>
           </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className={`flex flex-1 flex-col gap-3 p-4 ${isList ? 'justify-between' : ''}`}>
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-heading line-clamp-2 text-base font-semibold leading-snug">
+          <h3
+            className={`font-heading font-semibold leading-snug ${
+              isList ? 'line-clamp-3 text-lg' : 'line-clamp-2 text-base'
+            }`}
+          >
             {gift.name}
           </h3>
-          <Badge
-            variant={isReserved ? 'secondary' : 'outline'}
-            className={
-              isReserved
-                ? 'shrink-0 text-xs'
-                : 'border-primary/40 text-primary shrink-0 text-xs'
-            }
-          >
-            {isReserved ? 'Reservado' : 'Disponível'}
-          </Badge>
+          {isReserved && (
+            <Badge variant="secondary" className="shrink-0 text-xs">
+              Reservado
+            </Badge>
+          )}
         </div>
 
         {gift.description && (
-          <p className="text-muted-foreground line-clamp-2 text-sm">{gift.description}</p>
+          <p className={`text-muted-foreground text-sm ${isList ? 'line-clamp-3' : 'line-clamp-2'}`}>
+            {gift.description}
+          </p>
         )}
 
-        {/* Actions */}
-        <div className="mt-auto flex flex-col gap-2 pt-2">
-          {gift.purchaseLink && (
-            <a
-              href={gift.purchaseLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary flex items-center gap-1 text-xs font-medium underline-offset-2 hover:underline"
-            >
-              <ExternalLink className="h-3 w-3" />
-              Ver produto
-            </a>
-          )}
+        <div className={`mt-auto flex ${isList ? 'items-end justify-between gap-4' : 'flex-col gap-3'}`}>
+          <div>
+            {gift.price != null ? (
+              <p className="font-heading text-primary text-lg font-bold">{formatBRL(gift.price)}</p>
+            ) : (
+              <p className="text-muted-foreground text-sm">Valor a combinar</p>
+            )}
+          </div>
 
           <Button
             size="sm"
-            variant={isReserved ? 'secondary' : 'default'}
-            disabled={isReserved}
-            onClick={() => !isReserved && onReserve(gift)}
-            className="w-full"
-            aria-label={isReserved ? `${gift.name} já foi reservado` : `Reservar ${gift.name}`}
+            variant={disabled || isReserved ? 'secondary' : 'default'}
+            disabled={disabled || isReserved}
+            onClick={() => onOpen(gift)}
+            className={isList ? 'shrink-0' : 'w-full'}
+            aria-label={
+              isReserved
+                ? `${gift.name} ja foi reservado`
+                : disabled
+                  ? gift.price == null
+                    ? `${gift.name} ainda nao possui valor configurado`
+                    : `Use seu link de convite para comprar ${gift.name}`
+                  : `Abrir checkout para ${gift.name}`
+            }
           >
-            {isReserved ? 'Reservado ✓' : 'Reservar'}
+            {isReserved
+              ? 'Reservado'
+              : disabled
+                ? gift.price == null
+                  ? 'Preco pendente'
+                  : 'Use seu link de convite'
+                : 'Presentear'}
           </Button>
         </div>
       </div>

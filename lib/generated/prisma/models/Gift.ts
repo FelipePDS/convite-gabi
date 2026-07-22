@@ -20,8 +20,18 @@ export type GiftModel = runtime.Types.Result.DefaultSelection<Prisma.$GiftPayloa
 
 export type AggregateGift = {
   _count: GiftCountAggregateOutputType | null
+  _avg: GiftAvgAggregateOutputType | null
+  _sum: GiftSumAggregateOutputType | null
   _min: GiftMinAggregateOutputType | null
   _max: GiftMaxAggregateOutputType | null
+}
+
+export type GiftAvgAggregateOutputType = {
+  price: number | null
+}
+
+export type GiftSumAggregateOutputType = {
+  price: number | null
 }
 
 export type GiftMinAggregateOutputType = {
@@ -29,7 +39,7 @@ export type GiftMinAggregateOutputType = {
   name: string | null
   description: string | null
   imageUrl: string | null
-  purchaseLink: string | null
+  price: number | null
   status: $Enums.GiftStatus | null
   reservedByName: string | null
   reservedByPhone: string | null
@@ -43,7 +53,7 @@ export type GiftMaxAggregateOutputType = {
   name: string | null
   description: string | null
   imageUrl: string | null
-  purchaseLink: string | null
+  price: number | null
   status: $Enums.GiftStatus | null
   reservedByName: string | null
   reservedByPhone: string | null
@@ -57,7 +67,7 @@ export type GiftCountAggregateOutputType = {
   name: number
   description: number
   imageUrl: number
-  purchaseLink: number
+  price: number
   status: number
   reservedByName: number
   reservedByPhone: number
@@ -68,12 +78,20 @@ export type GiftCountAggregateOutputType = {
 }
 
 
+export type GiftAvgAggregateInputType = {
+  price?: true
+}
+
+export type GiftSumAggregateInputType = {
+  price?: true
+}
+
 export type GiftMinAggregateInputType = {
   id?: true
   name?: true
   description?: true
   imageUrl?: true
-  purchaseLink?: true
+  price?: true
   status?: true
   reservedByName?: true
   reservedByPhone?: true
@@ -87,7 +105,7 @@ export type GiftMaxAggregateInputType = {
   name?: true
   description?: true
   imageUrl?: true
-  purchaseLink?: true
+  price?: true
   status?: true
   reservedByName?: true
   reservedByPhone?: true
@@ -101,7 +119,7 @@ export type GiftCountAggregateInputType = {
   name?: true
   description?: true
   imageUrl?: true
-  purchaseLink?: true
+  price?: true
   status?: true
   reservedByName?: true
   reservedByPhone?: true
@@ -149,6 +167,18 @@ export type GiftAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: GiftAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: GiftSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: GiftMinAggregateInputType
@@ -179,6 +209,8 @@ export type GiftGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: GiftCountAggregateInputType | true
+  _avg?: GiftAvgAggregateInputType
+  _sum?: GiftSumAggregateInputType
   _min?: GiftMinAggregateInputType
   _max?: GiftMaxAggregateInputType
 }
@@ -188,7 +220,7 @@ export type GiftGroupByOutputType = {
   name: string
   description: string | null
   imageUrl: string | null
-  purchaseLink: string | null
+  price: number | null
   status: $Enums.GiftStatus
   reservedByName: string | null
   reservedByPhone: string | null
@@ -196,6 +228,8 @@ export type GiftGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   _count: GiftCountAggregateOutputType | null
+  _avg: GiftAvgAggregateOutputType | null
+  _sum: GiftSumAggregateOutputType | null
   _min: GiftMinAggregateOutputType | null
   _max: GiftMaxAggregateOutputType | null
 }
@@ -223,13 +257,14 @@ export type GiftWhereInput = {
   name?: Prisma.StringFilter<"Gift"> | string
   description?: Prisma.StringNullableFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
-  purchaseLink?: Prisma.StringNullableFilter<"Gift"> | string | null
+  price?: Prisma.FloatNullableFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableFilter<"Gift"> | string | null
   reservedByPhone?: Prisma.StringNullableFilter<"Gift"> | string | null
   reservedAt?: Prisma.DateTimeNullableFilter<"Gift"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Gift"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Gift"> | Date | string
+  purchases?: Prisma.GiftPurchaseListRelationFilter
 }
 
 export type GiftOrderByWithRelationInput = {
@@ -237,13 +272,14 @@ export type GiftOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  purchaseLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   reservedByPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   reservedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  purchases?: Prisma.GiftPurchaseOrderByRelationAggregateInput
 }
 
 export type GiftWhereUniqueInput = Prisma.AtLeast<{
@@ -254,13 +290,14 @@ export type GiftWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Gift"> | string
   description?: Prisma.StringNullableFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
-  purchaseLink?: Prisma.StringNullableFilter<"Gift"> | string | null
+  price?: Prisma.FloatNullableFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableFilter<"Gift"> | string | null
   reservedByPhone?: Prisma.StringNullableFilter<"Gift"> | string | null
   reservedAt?: Prisma.DateTimeNullableFilter<"Gift"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Gift"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Gift"> | Date | string
+  purchases?: Prisma.GiftPurchaseListRelationFilter
 }, "id">
 
 export type GiftOrderByWithAggregationInput = {
@@ -268,7 +305,7 @@ export type GiftOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
-  purchaseLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrderInput | Prisma.SortOrder
   reservedByPhone?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -276,8 +313,10 @@ export type GiftOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GiftCountOrderByAggregateInput
+  _avg?: Prisma.GiftAvgOrderByAggregateInput
   _max?: Prisma.GiftMaxOrderByAggregateInput
   _min?: Prisma.GiftMinOrderByAggregateInput
+  _sum?: Prisma.GiftSumOrderByAggregateInput
 }
 
 export type GiftScalarWhereWithAggregatesInput = {
@@ -288,7 +327,7 @@ export type GiftScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Gift"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
-  purchaseLink?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
+  price?: Prisma.FloatNullableWithAggregatesFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusWithAggregatesFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
   reservedByPhone?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
@@ -302,13 +341,14 @@ export type GiftCreateInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
-  purchaseLink?: string | null
+  price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
   reservedByPhone?: string | null
   reservedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  purchases?: Prisma.GiftPurchaseCreateNestedManyWithoutGiftInput
 }
 
 export type GiftUncheckedCreateInput = {
@@ -316,13 +356,14 @@ export type GiftUncheckedCreateInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
-  purchaseLink?: string | null
+  price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
   reservedByPhone?: string | null
   reservedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  purchases?: Prisma.GiftPurchaseUncheckedCreateNestedManyWithoutGiftInput
 }
 
 export type GiftUpdateInput = {
@@ -330,13 +371,14 @@ export type GiftUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  purchaseLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  purchases?: Prisma.GiftPurchaseUpdateManyWithoutGiftNestedInput
 }
 
 export type GiftUncheckedUpdateInput = {
@@ -344,13 +386,14 @@ export type GiftUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  purchaseLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  purchases?: Prisma.GiftPurchaseUncheckedUpdateManyWithoutGiftNestedInput
 }
 
 export type GiftCreateManyInput = {
@@ -358,7 +401,7 @@ export type GiftCreateManyInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
-  purchaseLink?: string | null
+  price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
   reservedByPhone?: string | null
@@ -372,7 +415,7 @@ export type GiftUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  purchaseLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -386,7 +429,7 @@ export type GiftUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  purchaseLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -400,7 +443,7 @@ export type GiftCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
-  purchaseLink?: Prisma.SortOrder
+  price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
   reservedByPhone?: Prisma.SortOrder
@@ -409,12 +452,16 @@ export type GiftCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type GiftAvgOrderByAggregateInput = {
+  price?: Prisma.SortOrder
+}
+
 export type GiftMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
-  purchaseLink?: Prisma.SortOrder
+  price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
   reservedByPhone?: Prisma.SortOrder
@@ -428,7 +475,7 @@ export type GiftMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
-  purchaseLink?: Prisma.SortOrder
+  price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
   reservedByPhone?: Prisma.SortOrder
@@ -437,10 +484,142 @@ export type GiftMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type GiftSumOrderByAggregateInput = {
+  price?: Prisma.SortOrder
+}
+
+export type GiftScalarRelationFilter = {
+  is?: Prisma.GiftWhereInput
+  isNot?: Prisma.GiftWhereInput
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type EnumGiftStatusFieldUpdateOperationsInput = {
   set?: $Enums.GiftStatus
 }
 
+export type GiftCreateNestedOneWithoutPurchasesInput = {
+  create?: Prisma.XOR<Prisma.GiftCreateWithoutPurchasesInput, Prisma.GiftUncheckedCreateWithoutPurchasesInput>
+  connectOrCreate?: Prisma.GiftCreateOrConnectWithoutPurchasesInput
+  connect?: Prisma.GiftWhereUniqueInput
+}
+
+export type GiftUpdateOneRequiredWithoutPurchasesNestedInput = {
+  create?: Prisma.XOR<Prisma.GiftCreateWithoutPurchasesInput, Prisma.GiftUncheckedCreateWithoutPurchasesInput>
+  connectOrCreate?: Prisma.GiftCreateOrConnectWithoutPurchasesInput
+  upsert?: Prisma.GiftUpsertWithoutPurchasesInput
+  connect?: Prisma.GiftWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.GiftUpdateToOneWithWhereWithoutPurchasesInput, Prisma.GiftUpdateWithoutPurchasesInput>, Prisma.GiftUncheckedUpdateWithoutPurchasesInput>
+}
+
+export type GiftCreateWithoutPurchasesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  price?: number | null
+  status?: $Enums.GiftStatus
+  reservedByName?: string | null
+  reservedByPhone?: string | null
+  reservedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type GiftUncheckedCreateWithoutPurchasesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  price?: number | null
+  status?: $Enums.GiftStatus
+  reservedByName?: string | null
+  reservedByPhone?: string | null
+  reservedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type GiftCreateOrConnectWithoutPurchasesInput = {
+  where: Prisma.GiftWhereUniqueInput
+  create: Prisma.XOR<Prisma.GiftCreateWithoutPurchasesInput, Prisma.GiftUncheckedCreateWithoutPurchasesInput>
+}
+
+export type GiftUpsertWithoutPurchasesInput = {
+  update: Prisma.XOR<Prisma.GiftUpdateWithoutPurchasesInput, Prisma.GiftUncheckedUpdateWithoutPurchasesInput>
+  create: Prisma.XOR<Prisma.GiftCreateWithoutPurchasesInput, Prisma.GiftUncheckedCreateWithoutPurchasesInput>
+  where?: Prisma.GiftWhereInput
+}
+
+export type GiftUpdateToOneWithWhereWithoutPurchasesInput = {
+  where?: Prisma.GiftWhereInput
+  data: Prisma.XOR<Prisma.GiftUpdateWithoutPurchasesInput, Prisma.GiftUncheckedUpdateWithoutPurchasesInput>
+}
+
+export type GiftUpdateWithoutPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
+  reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GiftUncheckedUpdateWithoutPurchasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
+  reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservedByPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type GiftCountOutputType
+ */
+
+export type GiftCountOutputType = {
+  purchases: number
+}
+
+export type GiftCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  purchases?: boolean | GiftCountOutputTypeCountPurchasesArgs
+}
+
+/**
+ * GiftCountOutputType without action
+ */
+export type GiftCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GiftCountOutputType
+   */
+  select?: Prisma.GiftCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * GiftCountOutputType without action
+ */
+export type GiftCountOutputTypeCountPurchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GiftPurchaseWhereInput
+}
 
 
 export type GiftSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -448,13 +627,15 @@ export type GiftSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   description?: boolean
   imageUrl?: boolean
-  purchaseLink?: boolean
+  price?: boolean
   status?: boolean
   reservedByName?: boolean
   reservedByPhone?: boolean
   reservedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  purchases?: boolean | Prisma.Gift$purchasesArgs<ExtArgs>
+  _count?: boolean | Prisma.GiftCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["gift"]>
 
 export type GiftSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -462,7 +643,7 @@ export type GiftSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   description?: boolean
   imageUrl?: boolean
-  purchaseLink?: boolean
+  price?: boolean
   status?: boolean
   reservedByName?: boolean
   reservedByPhone?: boolean
@@ -476,7 +657,7 @@ export type GiftSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   description?: boolean
   imageUrl?: boolean
-  purchaseLink?: boolean
+  price?: boolean
   status?: boolean
   reservedByName?: boolean
   reservedByPhone?: boolean
@@ -490,7 +671,7 @@ export type GiftSelectScalar = {
   name?: boolean
   description?: boolean
   imageUrl?: boolean
-  purchaseLink?: boolean
+  price?: boolean
   status?: boolean
   reservedByName?: boolean
   reservedByPhone?: boolean
@@ -499,17 +680,25 @@ export type GiftSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GiftOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "imageUrl" | "purchaseLink" | "status" | "reservedByName" | "reservedByPhone" | "reservedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["gift"]>
+export type GiftOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "imageUrl" | "price" | "status" | "reservedByName" | "reservedByPhone" | "reservedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["gift"]>
+export type GiftInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  purchases?: boolean | Prisma.Gift$purchasesArgs<ExtArgs>
+  _count?: boolean | Prisma.GiftCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type GiftIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type GiftIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $GiftPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Gift"
-  objects: {}
+  objects: {
+    purchases: Prisma.$GiftPurchasePayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     description: string | null
     imageUrl: string | null
-    purchaseLink: string | null
+    price: number | null
     status: $Enums.GiftStatus
     reservedByName: string | null
     reservedByPhone: string | null
@@ -910,6 +1099,7 @@ readonly fields: GiftFieldRefs;
  */
 export interface Prisma__GiftClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  purchases<T extends Prisma.Gift$purchasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Gift$purchasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GiftPurchasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -943,7 +1133,7 @@ export interface GiftFieldRefs {
   readonly name: Prisma.FieldRef<"Gift", 'String'>
   readonly description: Prisma.FieldRef<"Gift", 'String'>
   readonly imageUrl: Prisma.FieldRef<"Gift", 'String'>
-  readonly purchaseLink: Prisma.FieldRef<"Gift", 'String'>
+  readonly price: Prisma.FieldRef<"Gift", 'Float'>
   readonly status: Prisma.FieldRef<"Gift", 'GiftStatus'>
   readonly reservedByName: Prisma.FieldRef<"Gift", 'String'>
   readonly reservedByPhone: Prisma.FieldRef<"Gift", 'String'>
@@ -967,6 +1157,10 @@ export type GiftFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * Filter, which Gift to fetch.
    */
   where: Prisma.GiftWhereUniqueInput
@@ -985,6 +1179,10 @@ export type GiftFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * Filter, which Gift to fetch.
    */
   where: Prisma.GiftWhereUniqueInput
@@ -1002,6 +1200,10 @@ export type GiftFindFirstArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Gift
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
   /**
    * Filter, which Gift to fetch.
    */
@@ -1051,6 +1253,10 @@ export type GiftFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * Filter, which Gift to fetch.
    */
   where?: Prisma.GiftWhereInput
@@ -1098,6 +1304,10 @@ export type GiftFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the Gift
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
   /**
    * Filter, which Gifts to fetch.
    */
@@ -1147,6 +1357,10 @@ export type GiftCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * The data needed to create a Gift.
    */
   data: Prisma.XOR<Prisma.GiftCreateInput, Prisma.GiftUncheckedCreateInput>
@@ -1194,6 +1408,10 @@ export type GiftUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    * Omit specific fields from the Gift
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
   /**
    * The data needed to update a Gift.
    */
@@ -1261,6 +1479,10 @@ export type GiftUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * The filter to search for the Gift to update in case it exists.
    */
   where: Prisma.GiftWhereUniqueInput
@@ -1287,6 +1509,10 @@ export type GiftDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
+  /**
    * Filter which Gift to delete.
    */
   where: Prisma.GiftWhereUniqueInput
@@ -1307,6 +1533,30 @@ export type GiftDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
+ * Gift.purchases
+ */
+export type Gift$purchasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GiftPurchase
+   */
+  select?: Prisma.GiftPurchaseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GiftPurchase
+   */
+  omit?: Prisma.GiftPurchaseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftPurchaseInclude<ExtArgs> | null
+  where?: Prisma.GiftPurchaseWhereInput
+  orderBy?: Prisma.GiftPurchaseOrderByWithRelationInput | Prisma.GiftPurchaseOrderByWithRelationInput[]
+  cursor?: Prisma.GiftPurchaseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GiftPurchaseScalarFieldEnum | Prisma.GiftPurchaseScalarFieldEnum[]
+}
+
+/**
  * Gift without action
  */
 export type GiftDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1318,4 +1568,8 @@ export type GiftDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    * Omit specific fields from the Gift
    */
   omit?: Prisma.GiftOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GiftInclude<ExtArgs> | null
 }

@@ -18,6 +18,7 @@ model EventSettings {
   title       String   @default("Aniversário")
   description String?  @db.Text
   eventDate   DateTime
+  venueName   String?
   address     String
   mapsUrl     String?
   parking     String?
@@ -48,6 +49,7 @@ model Guest {
   invitationCode String?     @unique
   viewedAt       DateTime?
   confirmedAt    DateTime?
+  giftPurchases  GiftPurchase[]
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
@@ -60,18 +62,58 @@ enum GiftStatus {
   RESERVED
 }
 
+enum GiftPurchaseStatus {
+  PENDING
+  IN_PROCESS
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
 model Gift {
   id               String     @id @default(cuid())
   name             String
   description      String?    @db.Text
   imageUrl         String?
-  purchaseLink     String?
+  price            Float?
   status           GiftStatus @default(AVAILABLE)
   reservedByName   String?
   reservedByPhone  String?
   reservedAt       DateTime?
+  purchases        GiftPurchase[]
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
+}
+
+model GiftPurchase {
+  id                String             @id @default(cuid())
+  giftId            String
+  guestId           String
+  buyerName         String
+  buyerPhone        String
+  invitationCode    String
+  amount            Float?
+  status            GiftPurchaseStatus @default(PENDING)
+  provider          String?
+  externalReference String?            @unique
+  providerPaymentId String?            @unique
+  paymentMethodId   String?
+  paymentTypeId     String?
+  statusDetail      String?
+  qrCode            String?            @db.Text
+  qrCodeBase64      String?            @db.Text
+  paidAt            DateTime?
+  lastWebhookAt     DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  gift  Gift  @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([giftId, createdAt])
+  @@index([guestId, createdAt])
+  @@index([status, createdAt])
 }
 
 // ─────────────────────────────────────────────

@@ -54,6 +54,7 @@ export const ModelName = {
   EventSettings: 'EventSettings',
   Guest: 'Guest',
   Gift: 'Gift',
+  GiftPurchase: 'GiftPurchase',
   GalleryItem: 'GalleryItem',
   AdminUser: 'AdminUser'
 } as const
@@ -79,6 +80,7 @@ export const EventSettingsScalarFieldEnum = {
   title: 'title',
   description: 'description',
   eventDate: 'eventDate',
+  venueName: 'venueName',
   address: 'address',
   mapsUrl: 'mapsUrl',
   parking: 'parking',
@@ -115,7 +117,7 @@ export const GiftScalarFieldEnum = {
   name: 'name',
   description: 'description',
   imageUrl: 'imageUrl',
-  purchaseLink: 'purchaseLink',
+  price: 'price',
   status: 'status',
   reservedByName: 'reservedByName',
   reservedByPhone: 'reservedByPhone',
@@ -125,6 +127,32 @@ export const GiftScalarFieldEnum = {
 } as const
 
 export type GiftScalarFieldEnum = (typeof GiftScalarFieldEnum)[keyof typeof GiftScalarFieldEnum]
+
+
+export const GiftPurchaseScalarFieldEnum = {
+  id: 'id',
+  giftId: 'giftId',
+  guestId: 'guestId',
+  buyerName: 'buyerName',
+  buyerPhone: 'buyerPhone',
+  invitationCode: 'invitationCode',
+  amount: 'amount',
+  status: 'status',
+  provider: 'provider',
+  externalReference: 'externalReference',
+  providerPaymentId: 'providerPaymentId',
+  paymentMethodId: 'paymentMethodId',
+  paymentTypeId: 'paymentTypeId',
+  statusDetail: 'statusDetail',
+  qrCode: 'qrCode',
+  qrCodeBase64: 'qrCodeBase64',
+  paidAt: 'paidAt',
+  lastWebhookAt: 'lastWebhookAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GiftPurchaseScalarFieldEnum = (typeof GiftPurchaseScalarFieldEnum)[keyof typeof GiftPurchaseScalarFieldEnum]
 
 
 export const GalleryItemScalarFieldEnum = {

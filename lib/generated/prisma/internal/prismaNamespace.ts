@@ -387,6 +387,7 @@ export const ModelName = {
   EventSettings: 'EventSettings',
   Guest: 'Guest',
   Gift: 'Gift',
+  GiftPurchase: 'GiftPurchase',
   GalleryItem: 'GalleryItem',
   AdminUser: 'AdminUser'
 } as const
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "eventSettings" | "guest" | "gift" | "galleryItem" | "adminUser"
+    modelProps: "eventSettings" | "guest" | "gift" | "giftPurchase" | "galleryItem" | "adminUser"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -630,6 +631,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GiftPurchase: {
+      payload: Prisma.$GiftPurchasePayload<ExtArgs>
+      fields: Prisma.GiftPurchaseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GiftPurchaseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GiftPurchaseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        findFirst: {
+          args: Prisma.GiftPurchaseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GiftPurchaseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        findMany: {
+          args: Prisma.GiftPurchaseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>[]
+        }
+        create: {
+          args: Prisma.GiftPurchaseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        createMany: {
+          args: Prisma.GiftPurchaseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GiftPurchaseCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>[]
+        }
+        delete: {
+          args: Prisma.GiftPurchaseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        update: {
+          args: Prisma.GiftPurchaseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        deleteMany: {
+          args: Prisma.GiftPurchaseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GiftPurchaseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GiftPurchaseUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>[]
+        }
+        upsert: {
+          args: Prisma.GiftPurchaseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GiftPurchasePayload>
+        }
+        aggregate: {
+          args: Prisma.GiftPurchaseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGiftPurchase>
+        }
+        groupBy: {
+          args: Prisma.GiftPurchaseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GiftPurchaseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GiftPurchaseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GiftPurchaseCountAggregateOutputType> | number
+        }
+      }
+    }
     GalleryItem: {
       payload: Prisma.$GalleryItemPayload<ExtArgs>
       fields: Prisma.GalleryItemFieldRefs
@@ -822,6 +897,7 @@ export const EventSettingsScalarFieldEnum = {
   title: 'title',
   description: 'description',
   eventDate: 'eventDate',
+  venueName: 'venueName',
   address: 'address',
   mapsUrl: 'mapsUrl',
   parking: 'parking',
@@ -858,7 +934,7 @@ export const GiftScalarFieldEnum = {
   name: 'name',
   description: 'description',
   imageUrl: 'imageUrl',
-  purchaseLink: 'purchaseLink',
+  price: 'price',
   status: 'status',
   reservedByName: 'reservedByName',
   reservedByPhone: 'reservedByPhone',
@@ -868,6 +944,32 @@ export const GiftScalarFieldEnum = {
 } as const
 
 export type GiftScalarFieldEnum = (typeof GiftScalarFieldEnum)[keyof typeof GiftScalarFieldEnum]
+
+
+export const GiftPurchaseScalarFieldEnum = {
+  id: 'id',
+  giftId: 'giftId',
+  guestId: 'guestId',
+  buyerName: 'buyerName',
+  buyerPhone: 'buyerPhone',
+  invitationCode: 'invitationCode',
+  amount: 'amount',
+  status: 'status',
+  provider: 'provider',
+  externalReference: 'externalReference',
+  providerPaymentId: 'providerPaymentId',
+  paymentMethodId: 'paymentMethodId',
+  paymentTypeId: 'paymentTypeId',
+  statusDetail: 'statusDetail',
+  qrCode: 'qrCode',
+  qrCodeBase64: 'qrCodeBase64',
+  paidAt: 'paidAt',
+  lastWebhookAt: 'lastWebhookAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GiftPurchaseScalarFieldEnum = (typeof GiftPurchaseScalarFieldEnum)[keyof typeof GiftPurchaseScalarFieldEnum]
 
 
 export const GalleryItemScalarFieldEnum = {
@@ -981,6 +1083,20 @@ export type ListEnumGuestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
  * Reference to a field of type 'GiftStatus'
  */
 export type EnumGiftStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftStatus'>
@@ -995,6 +1111,20 @@ export type ListEnumGiftStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 
 
 /**
+ * Reference to a field of type 'GiftPurchaseStatus'
+ */
+export type EnumGiftPurchaseStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftPurchaseStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GiftPurchaseStatus[]'
+ */
+export type ListEnumGiftPurchaseStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GiftPurchaseStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'GalleryItemType'
  */
 export type EnumGalleryItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GalleryItemType'>
@@ -1005,20 +1135,6 @@ export type EnumGalleryItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'GalleryItemType[]'
  */
 export type ListEnumGalleryItemTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GalleryItemType[]'>
-    
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1134,6 +1250,7 @@ export type GlobalOmitConfig = {
   eventSettings?: Prisma.EventSettingsOmit
   guest?: Prisma.GuestOmit
   gift?: Prisma.GiftOmit
+  giftPurchase?: Prisma.GiftPurchaseOmit
   galleryItem?: Prisma.GalleryItemOmit
   adminUser?: Prisma.AdminUserOmit
 }

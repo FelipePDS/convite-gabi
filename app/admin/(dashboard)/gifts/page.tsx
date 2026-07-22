@@ -3,7 +3,14 @@ import { GiftsManager } from '@/components/admin/GiftsManager'
 
 async function getGifts() {
   try {
-    return await prisma.gift.findMany({ orderBy: { createdAt: 'asc' } })
+    return await prisma.gift.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: {
+        purchases: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    })
   } catch {
     return []
   }
@@ -11,22 +18,58 @@ async function getGifts() {
 
 export default async function AdminGiftsPage() {
   const raw = await getGifts()
-  const gifts = raw.map((g) => ({
-    id: g.id,
-    name: g.name,
-    description: g.description ?? null,
-    imageUrl: g.imageUrl ?? null,
-    purchaseLink: g.purchaseLink ?? null,
-    status: g.status as 'AVAILABLE' | 'RESERVED',
-    reservedByName: g.reservedByName ?? null,
-    reservedByPhone: g.reservedByPhone ?? null,
+  const gifts = raw.map((gift) => ({
+    id: gift.id,
+    name: gift.name,
+    description: gift.description ?? null,
+    imageUrl: gift.imageUrl ?? null,
+    price: gift.price ?? null,
+    status: gift.status,
+    reservedByName: gift.reservedByName ?? null,
+    reservedByPhone: gift.reservedByPhone ?? null,
+    reservedAt: gift.reservedAt?.toISOString() ?? null,
+    purchaseCount: gift.purchases.length,
+    latestPurchase: gift.purchases[0]
+      ? {
+          id: gift.purchases[0].id,
+          buyerName: gift.purchases[0].buyerName,
+          buyerPhone: gift.purchases[0].buyerPhone,
+          invitationCode: gift.purchases[0].invitationCode,
+          amount: gift.purchases[0].amount ?? null,
+          status: gift.purchases[0].status,
+          statusDetail: gift.purchases[0].statusDetail ?? null,
+          provider: gift.purchases[0].provider ?? null,
+          providerPaymentId: gift.purchases[0].providerPaymentId ?? null,
+          paymentMethodId: gift.purchases[0].paymentMethodId ?? null,
+          paymentTypeId: gift.purchases[0].paymentTypeId ?? null,
+          paidAt: gift.purchases[0].paidAt?.toISOString() ?? null,
+          createdAt: gift.purchases[0].createdAt.toISOString(),
+        }
+      : null,
+    purchases: gift.purchases.map((purchase) => ({
+      id: purchase.id,
+      buyerName: purchase.buyerName,
+      buyerPhone: purchase.buyerPhone,
+      invitationCode: purchase.invitationCode,
+      amount: purchase.amount ?? null,
+      status: purchase.status,
+      statusDetail: purchase.statusDetail ?? null,
+      provider: purchase.provider ?? null,
+      providerPaymentId: purchase.providerPaymentId ?? null,
+      paymentMethodId: purchase.paymentMethodId ?? null,
+      paymentTypeId: purchase.paymentTypeId ?? null,
+      paidAt: purchase.paidAt?.toISOString() ?? null,
+      createdAt: purchase.createdAt.toISOString(),
+    })),
   }))
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-2xl font-bold">Presentes</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Gerencie a lista de presentes</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Gerencie os itens e acompanhe as compras registradas por convite.
+        </p>
       </div>
       <GiftsManager initialGifts={gifts} />
     </div>

@@ -1,5 +1,5 @@
 import prisma from '@/lib/db'
-import { Users, UserCheck, Clock, Gift } from 'lucide-react'
+import { Clock, Gift, UserCheck, Users } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -13,41 +13,47 @@ import { Badge } from '@/components/ui/badge'
 
 async function getStats() {
   try {
-    const [total, confirmed, pending, reservedGifts, recentGuests] = await Promise.all([
+    const [total, confirmed, pending, giftPurchases, recentGuests] = await Promise.all([
       prisma.guest.count(),
       prisma.guest.count({ where: { status: 'CONFIRMED' } }),
       prisma.guest.count({ where: { status: 'PENDING' } }),
-      prisma.gift.count({ where: { status: 'RESERVED' } }),
+      prisma.giftPurchase.count(),
       prisma.guest.findMany({
         orderBy: { createdAt: 'desc' },
         take: 8,
-        select: { id: true, name: true, phone: true, guestCount: true, status: true, confirmedAt: true },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          guestCount: true,
+          status: true,
+          confirmedAt: true,
+        },
       }),
     ])
-    return { total, confirmed, pending, reservedGifts, recentGuests }
+    return { total, confirmed, pending, giftPurchases, recentGuests }
   } catch {
-    return { total: 0, confirmed: 0, pending: 0, reservedGifts: 0, recentGuests: [] }
+    return { total: 0, confirmed: 0, pending: 0, giftPurchases: 0, recentGuests: [] }
   }
 }
 
 export default async function AdminOverviewPage() {
-  const { total, confirmed, pending, reservedGifts, recentGuests } = await getStats()
+  const { total, confirmed, pending, giftPurchases, recentGuests } = await getStats()
 
   const stats = [
     { label: 'Total de convites', value: total, icon: Users, color: 'text-blue-500' },
-    { label: 'Presenças confirmadas', value: confirmed, icon: UserCheck, color: 'text-green-500' },
+    { label: 'Presencas confirmadas', value: confirmed, icon: UserCheck, color: 'text-green-500' },
     { label: 'Pendentes', value: pending, icon: Clock, color: 'text-amber-500' },
-    { label: 'Presentes reservados', value: reservedGifts, icon: Gift, color: 'text-primary' },
+    { label: 'Compras registradas', value: giftPurchases, icon: Gift, color: 'text-primary' },
   ]
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-2xl font-bold">Visão geral</h1>
+        <h1 className="font-heading text-2xl font-bold">Visao geral</h1>
         <p className="text-muted-foreground mt-1 text-sm">Resumo do evento</p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Card key={label}>
@@ -62,15 +68,14 @@ export default async function AdminOverviewPage() {
         ))}
       </div>
 
-      {/* Recent guests */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Confirmações recentes</CardTitle>
+          <CardTitle className="text-base">Confirmacoes recentes</CardTitle>
         </CardHeader>
         <CardContent>
           {recentGuests.length === 0 ? (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              Nenhuma confirmação ainda.
+              Nenhuma confirmacao ainda.
             </p>
           ) : (
             <Table>
@@ -84,20 +89,20 @@ export default async function AdminOverviewPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentGuests.map((g) => (
-                  <TableRow key={g.id}>
-                    <TableCell className="font-medium">{g.name}</TableCell>
-                    <TableCell>{g.phone}</TableCell>
-                    <TableCell>{g.guestCount}</TableCell>
+                {recentGuests.map((guest) => (
+                  <TableRow key={guest.id}>
+                    <TableCell className="font-medium">{guest.name}</TableCell>
+                    <TableCell>{guest.phone}</TableCell>
+                    <TableCell>{guest.guestCount}</TableCell>
                     <TableCell>
-                      <Badge variant={g.status === 'CONFIRMED' ? 'default' : 'secondary'}>
-                        {g.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
+                      <Badge variant={guest.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                        {guest.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {g.confirmedAt
-                        ? new Intl.DateTimeFormat('pt-BR').format(new Date(g.confirmedAt))
-                        : '—'}
+                      {guest.confirmedAt
+                        ? new Intl.DateTimeFormat('pt-BR').format(new Date(guest.confirmedAt))
+                        : '-'}
                     </TableCell>
                   </TableRow>
                 ))}

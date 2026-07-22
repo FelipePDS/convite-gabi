@@ -174,7 +174,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
         </Field>
 
         {/* Guest count */}
-        <Field
+        {/* <Field
           id="rsvp-guests"
           label="Número de acompanhantes"
           error={errors.guestCount?.message}
@@ -187,7 +187,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
             aria-invalid={!!errors.guestCount}
             {...register('guestCount', { valueAsNumber: true })}
           />
-        </Field>
+        </Field> */}
 
         {/* Message */}
         <Field

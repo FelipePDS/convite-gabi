@@ -2,27 +2,49 @@
 
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { Gift } from 'lucide-react'
+import { Gift, LayoutGrid, Rows3 } from 'lucide-react'
 import { GiftCard } from './GiftCard'
-import { ReserveModal } from './ReserveModal'
+import { GiftPurchaseModal } from './GiftPurchaseModal'
 import type { GiftData } from '@/services/gifts'
+
+export type GiftBuyer = {
+  name: string
+  phone: string
+  invitationCode: string
+}
 
 interface GiftsGridProps {
   initialGifts: GiftData[]
-  invitationCode?: string
+  buyer?: GiftBuyer | null
 }
 
-export function GiftsGrid({ initialGifts, invitationCode }: GiftsGridProps) {
-  const [gifts, setGifts] = useState<GiftData[]>(initialGifts)
-  const [reservingGift, setReservingGift] = useState<GiftData | null>(null)
+const sortGifts = (gifts: GiftData[]) =>
+  [...gifts].sort((left, right) => {
+    if (left.status === right.status) return 0
+    if (left.status === 'RESERVED') return 1
+    return -1
+  })
 
-  const handleReserveSuccess = (giftId: string, reservedByName: string) => {
-    // Optimistic update
+export function GiftsGrid({ initialGifts, buyer = null }: GiftsGridProps) {
+  const [gifts, setGifts] = useState<GiftData[]>(() => sortGifts(initialGifts))
+  const [openGift, setOpenGift] = useState<GiftData | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const canPurchase = Boolean(buyer?.invitationCode)
+
+  const handlePurchaseSuccess = (giftId: string) => {
     setGifts((prev) =>
-      prev.map((g) =>
-        g.id === giftId ? { ...g, status: 'RESERVED', reservedByName } : g
+      sortGifts(
+        prev.map((gift) =>
+          gift.id === giftId
+            ? {
+                ...gift,
+                status: 'RESERVED',
+              }
+            : gift
+        )
       )
     )
+    setOpenGift(null)
   }
 
   if (gifts.length === 0) {
@@ -36,22 +58,70 @@ export function GiftsGrid({ initialGifts, invitationCode }: GiftsGridProps) {
 
   return (
     <>
-      <AnimatePresence>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        {/* <p className="text-muted-foreground text-sm">
+          {gifts.length} presente(s) para navegar
+        </p> */}
+
+        <div className="bg-background/80 inline-flex items-center gap-1 rounded-full border px-1 py-1 shadow-sm backdrop-blur-sm">
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === 'grid'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            aria-pressed={viewMode === 'grid'}
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+            Grade
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === 'list'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            aria-pressed={viewMode === 'list'}
+          >
+            <Rows3 className="h-3.5 w-3.5" />
+            Lista
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence mode="popLayout">
+        <div
+          className={
+            viewMode === 'grid'
+              ? 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'
+              : 'flex flex-col gap-4'
+          }
+        >
           {gifts.map((gift) => (
-            <GiftCard key={gift.id} gift={gift} onReserve={setReservingGift} />
+            <GiftCard
+              key={gift.id}
+              gift={gift}
+              disabled={!canPurchase || gift.status === 'RESERVED' || gift.price == null}
+              viewMode={viewMode}
+              onOpen={setOpenGift}
+            />
           ))}
         </div>
       </AnimatePresence>
 
-      <ReserveModal
-        gift={reservingGift}
-        open={!!reservingGift}
+      <GiftPurchaseModal
+        gift={openGift}
+        open={!!openGift}
         onOpenChange={(open) => {
-          if (!open) setReservingGift(null)
+          if (!open) setOpenGift(null)
         }}
-        onSuccess={handleReserveSuccess}
-        invitationCode={invitationCode}
+        onSuccess={handlePurchaseSuccess}
+        buyer={buyer}
       />
     </>
   )

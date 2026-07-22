@@ -77,7 +77,7 @@ export function Navbar() {
           )}
         >
           <Heart className="text-primary h-4 w-4 fill-current" />
-          <span>Gabi</span>
+          <span>Gaby 15 anos</span>
         </Link>
 
         {/* Desktop links */}
@@ -123,7 +123,7 @@ export function Navbar() {
               <SheetHeader>
                 <SheetTitle className="font-heading flex items-center gap-2 text-left text-lg">
                   <Heart className="text-primary h-4 w-4 fill-current" />
-                  Gabi
+                  Gaby 15 anos
                 </SheetTitle>
               </SheetHeader>
               <ul className="mt-6 flex flex-col gap-1">

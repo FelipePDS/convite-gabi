@@ -24,6 +24,7 @@ export default async function AdminSettingsPage() {
         title: settings.title,
         description: settings.description ?? '',
         eventDate: toDatetimeLocal(settings.eventDate),
+        venueName: settings.venueName ?? '',
         address: settings.address,
         mapsUrl: settings.mapsUrl ?? '',
         parking: settings.parking ?? '',

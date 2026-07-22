@@ -57,6 +57,11 @@ export type Guest = Prisma.GuestModel
  */
 export type Gift = Prisma.GiftModel
 /**
+ * Model GiftPurchase
+ * 
+ */
+export type GiftPurchase = Prisma.GiftPurchaseModel
+/**
  * Model GalleryItem
  * 
  */

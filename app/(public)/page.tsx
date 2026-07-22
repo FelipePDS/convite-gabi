@@ -46,7 +46,7 @@ export default async function HomePage() {
       <Suspense fallback={<GiftsSkeleton />}>
         <GiftsSection />
       </Suspense>
-      <PixSection event={event} />
+      {/* <PixSection event={event} /> */}
     </>
   )
 }

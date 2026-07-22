@@ -26,6 +26,18 @@ export const GiftStatus = {
 export type GiftStatus = (typeof GiftStatus)[keyof typeof GiftStatus]
 
 
+export const GiftPurchaseStatus = {
+  PENDING: 'PENDING',
+  IN_PROCESS: 'IN_PROCESS',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type GiftPurchaseStatus = (typeof GiftPurchaseStatus)[keyof typeof GiftPurchaseStatus]
+
+
 export const GalleryItemType = {
   IMAGE: 'IMAGE',
   VIDEO: 'VIDEO'

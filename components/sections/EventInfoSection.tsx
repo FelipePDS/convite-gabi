@@ -1,6 +1,7 @@
 'use client'
 
-import { Calendar, Clock, MapPin, Shirt, Phone } from 'lucide-react'
+import { Calendar, Clock, MapPin, Shirt, Phone, Building2, ParkingSquare, ExternalLink } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { SectionReveal } from './SectionReveal'
 import type { EventData } from '@/services/event'
 
@@ -9,28 +10,53 @@ interface InfoCardProps {
   label: string
   value: string
   delay?: number
+  href?: string // when set the card becomes a link to Google Maps
 }
 
-function InfoCard({ icon, label, value, delay }: InfoCardProps) {
+function InfoCard({ icon, label, value, delay, href }: InfoCardProps) {
+  const inner = (
+    <div
+      className={cn(
+        'bg-card border-border flex items-start gap-4 rounded-2xl border p-6 shadow-sm transition-all',
+        href
+          ? 'cursor-pointer hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5'
+          : 'hover:shadow-md'
+      )}
+      style={{ alignItems: 'center' }}
+    >
+      <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-muted-foreground mb-0.5 text-xs font-medium uppercase tracking-wider">
+          {label}
+        </p>
+        <p className="text-foreground font-medium">{value}</p>
+        {href && (
+          <span className="text-primary mt-2 flex items-center gap-1 text-xs font-semibold">
+            Abrir no Google Maps
+            <ExternalLink className="h-3 w-3" />
+          </span>
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <SectionReveal delay={delay}>
-      <div style={{ alignItems: "center" }} className="bg-card border-border flex items-start gap-4 rounded-2xl border p-6 shadow-sm transition-shadow hover:shadow-md">
-        <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-          {icon}
-        </div>
-        <div>
-          <p className="text-muted-foreground mb-0.5 text-xs font-medium uppercase tracking-wider">
-            {label}
-          </p>
-          <p className="text-foreground font-medium">{value}</p>
-        </div>
-      </div>
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="block">
+          {inner}
+        </a>
+      ) : (
+        inner
+      )}
     </SectionReveal>
   )
 }
 
 interface EventInfoSectionProps {
-  event: Pick<EventData, 'eventDate' | 'address' | 'parking' | 'dressCode' | 'contact' | 'mapsUrl'>
+  event: Pick<EventData, 'eventDate' | 'venueName' | 'address' | 'parking' | 'dressCode' | 'contact' | 'mapsUrl'>
 }
 
 export function EventInfoSection({ event }: EventInfoSectionProps) {
@@ -61,10 +87,21 @@ export function EventInfoSection({ event }: EventInfoSectionProps) {
       label: 'Horário',
       value: `A partir das ${formattedTime}`,
     },
+    event.venueName && {
+      icon: <Building2 className="h-5 w-5" />,
+      label: 'Local',
+      value: event.venueName,
+    },
     {
       icon: <MapPin className="h-5 w-5" />,
-      label: event.parking ? 'Endereço & Estacionamento' : 'Endereço',
-      value: event.parking ? `${event.address} — ${event.parking}` : event.address,
+      label: 'Endereço',
+      value: event.address,
+      href: event.mapsUrl ?? undefined,
+    },
+    event.parking && {
+      icon: <ParkingSquare className="h-5 w-5" />,
+      label: 'Estacionamento',
+      value: event.parking,
     },
     event.dressCode && {
       icon: <Shirt className="h-5 w-5" />,
@@ -107,26 +144,6 @@ export function EventInfoSection({ event }: EventInfoSectionProps) {
             <InfoCard key={card.label} {...card} delay={i * 0.08} />
           ))}
         </div>
-
-        {/* Google Maps embed */}
-        {event.mapsUrl && (
-          <SectionReveal delay={0.3} className="mt-12">
-            <div className="overflow-hidden rounded-2xl border shadow-md">
-              <iframe
-                src={event.mapsUrl}
-                width="100%"
-                height="400"
-                className="block"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Localização do evento"
-                aria-label="Mapa da localização do evento"
-              />
-            </div>
-          </SectionReveal>
-        )}
       </div>
     </section>
   )
