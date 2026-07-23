@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,12 +21,17 @@ interface ReserveModalProps {
   gift: GiftData | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: (giftId: string, reservedByName: string) => void
-  /** Pre-filled invitation code from the invite page */
+  onSuccess: (giftId: string) => void
   invitationCode?: string
 }
 
-export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCode }: ReserveModalProps) {
+export function ReserveModal({
+  gift,
+  open,
+  onOpenChange,
+  onSuccess,
+  invitationCode,
+}: ReserveModalProps) {
   const [succeeded, setSucceeded] = useState(false)
 
   const {
@@ -42,9 +47,10 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
-      reset()
+      reset({ invitationCode: invitationCode ?? '' })
       setSucceeded(false)
     }
+
     onOpenChange(next)
   }
 
@@ -57,10 +63,10 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
       body: JSON.stringify(data),
     })
 
-    const json = await res.json()
+    const json = await res.json().catch(() => ({}))
 
     if (res.status === 409) {
-      setError('root', { message: 'Este presente já foi reservado por outra pessoa.' })
+      setError('root', { message: 'Este presente ja foi reservado por outra pessoa.' })
       return
     }
 
@@ -70,10 +76,9 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
     }
 
     setSucceeded(true)
-    onSuccess(gift.id, data.name)
+    onSuccess(gift.id)
 
-    // Auto-close after 2 s
-    setTimeout(() => handleOpenChange(false), 2_000)
+    window.setTimeout(() => handleOpenChange(false), 2000)
   }
 
   return (
@@ -87,7 +92,7 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
             <div>
               <p className="font-heading text-lg font-semibold">Presente reservado!</p>
               <p className="text-muted-foreground mt-1 text-sm">
-                Obrigado por reservar <strong>{gift?.name}</strong>. 🎁
+                Obrigado por reservar <strong>{gift?.name}</strong>.
               </p>
             </div>
           </div>
@@ -96,48 +101,18 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
             <DialogHeader>
               <DialogTitle>Reservar presente</DialogTitle>
               <DialogDescription>
-                {gift?.name} — preencha seus dados para reservar.
+                {gift?.name} - informe o codigo do convite para reservar.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-              {/* Name */}
-              <div className="space-y-1.5">
-                <Label htmlFor="reserve-name">Seu nome *</Label>
-                <Input
-                  id="reserve-name"
-                  placeholder="Nome completo"
-                  autoComplete="name"
-                  aria-invalid={!!errors.name}
-                  {...register('name')}
-                />
-                {errors.name && (
-                  <p className="text-destructive text-xs">{errors.name.message}</p>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-1.5">
-                <Label htmlFor="reserve-phone">WhatsApp / Telefone *</Label>
-                <Input
-                  id="reserve-phone"
-                  type="tel"
-                  placeholder="(11) 91234-5678"
-                  autoComplete="tel"
-                  aria-invalid={!!errors.phone}
-                  {...register('phone')}
-                />
-                {errors.phone && (
-                  <p className="text-destructive text-xs">{errors.phone.message}</p>
-                )}
-              </div>
-
-              {/* Invitation code */}
               <div className="space-y-1.5">
                 <Label htmlFor="reserve-code">
-                  Código de convite *
+                  Codigo de convite *
                   {invitationCode && (
-                    <span className="text-muted-foreground ml-1 text-xs font-normal">(preenchido)</span>
+                    <span className="text-muted-foreground ml-1 text-xs font-normal">
+                      (preenchido)
+                    </span>
                   )}
                 </Label>
                 <Input
@@ -145,17 +120,25 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
                   placeholder="Ex: A1B2C3D4"
                   aria-invalid={!!errors.invitationCode}
                   readOnly={!!invitationCode}
-                  className={invitationCode ? 'bg-muted font-mono text-sm' : 'font-mono text-sm uppercase'}
+                  className={
+                    invitationCode
+                      ? 'bg-muted font-mono text-sm'
+                      : 'font-mono text-sm uppercase'
+                  }
                   {...register('invitationCode')}
                 />
                 {errors.invitationCode && (
-                  <p className="text-destructive text-xs">{errors.invitationCode.message}</p>
+                  <p className="text-destructive text-xs">
+                    {errors.invitationCode.message}
+                  </p>
                 )}
               </div>
 
-              {/* Server error */}
               {errors.root && (
-                <p role="alert" className="bg-destructive/10 text-destructive rounded-xl px-4 py-2 text-sm">
+                <p
+                  role="alert"
+                  className="bg-destructive/10 text-destructive rounded-xl px-4 py-2 text-sm"
+                >
                   {errors.root.message}
                 </p>
               )}
@@ -173,7 +156,7 @@ export function ReserveModal({ gift, open, onOpenChange, onSuccess, invitationCo
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Reservando…
+                      Reservando...
                     </>
                   ) : (
                     'Reservar'
