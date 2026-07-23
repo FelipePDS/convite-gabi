@@ -65,6 +65,40 @@ const mercadopagoErrorMessages: Record<string, string> = {
   APP_URL_MISSING: 'Configure NEXT_PUBLIC_APP_URL para receber os webhooks.',
 }
 
+function getMercadoPagoCheckoutError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return null
+  }
+
+  const maybeError = error as {
+    message?: string
+    status?: number
+    error?: string
+    cause?: Array<{ description?: string }>
+  }
+
+  const message = maybeError.message?.trim() ?? ''
+  const causeMessage = maybeError.cause?.[0]?.description?.trim() ?? ''
+  const joinedMessage = `${message} ${causeMessage}`.trim().toLowerCase()
+
+  if (joinedMessage.includes('collector user without key enabled for qr render')) {
+    return {
+      status: 400,
+      error:
+        'A conta do Mercado Pago usada neste projeto ainda nao possui uma chave PIX habilitada para gerar QR Code. Ative uma chave PIX nessa conta e tente novamente.',
+    }
+  }
+
+  if (maybeError.status && maybeError.status >= 400 && maybeError.status < 500 && message) {
+    return {
+      status: maybeError.status,
+      error: message,
+    }
+  }
+
+  return null
+}
+
 function splitGuestName(name: string) {
   const trimmed = name.trim()
 
@@ -267,6 +301,15 @@ export async function POST(
           { status: 422 }
         )
       }
+    }
+
+    const mercadoPagoError = getMercadoPagoCheckoutError(error)
+    if (mercadoPagoError) {
+      console.error('[POST /api/gifts/[id]/checkout][mercadopago]', error)
+      return NextResponse.json(
+        { error: mercadoPagoError.error },
+        { status: mercadoPagoError.status }
+      )
     }
 
     console.error('[POST /api/gifts/[id]/checkout]', error)

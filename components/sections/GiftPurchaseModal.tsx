@@ -325,9 +325,13 @@ export function GiftPurchaseModal({
   const buyerName = buyer ? splitBuyerName(buyer.name) : null
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] overflow-hidden sm:max-w-xl">
-        <div className="max-h-[84vh] overflow-y-auto px-1">
+    <Dialog open={open} onOpenChange={handleClose} modal={false} disablePointerDismissal>
+      <DialogContent
+        className="inset-0 h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-none p-0 sm:inset-auto sm:h-auto sm:max-h-[92vh] sm:w-[calc(100vw-1.5rem)] sm:max-w-xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:p-4"
+        initialFocus={false}
+        finalFocus={false}
+      >
+        <div className="max-h-dvh overflow-y-auto px-4 py-6 sm:max-h-[84vh] sm:px-1 sm:py-0">
           <DialogHeader>
             <DialogTitle>{gift.name}</DialogTitle>
             <DialogDescription>
@@ -500,6 +504,7 @@ export function GiftPurchaseModal({
 
                 <div className="rounded-2xl border px-2 py-3 sm:px-4">
                   <Payment
+                    key={`${gift.id}-mercadopago-checkout`}
                     initialization={{
                       amount: gift.price ?? 0,
                       payer: {
@@ -513,19 +518,12 @@ export function GiftPurchaseModal({
                         bankTransfer: 'all',
                         maxInstallments: 6,
                         types: {
-                          excluded: [
-                            'atm',
-                            'ticket',
-                            'wallet_purchase',
-                            'onboarding_credits',
-                            'debitCard',
-                            'prepaidCard',
-                          ],
+                          included: ['creditCard', 'bank_transfer'],
                         },
                       },
                       visual: {
                         defaultPaymentOption: {
-                          bankTransferForm: true,
+                          creditCardForm: true,
                         },
                       },
                     }}
