@@ -69,7 +69,7 @@ export function getMercadoPagoNotificationUrl() {
     throw new Error('APP_URL_MISSING')
   }
 
-  return `${appUrl}/api/webhooks/mercadopago`
+  return `${appUrl}/api/webhooks/mercadopago?source_news=webhooks`
 }
 
 export function createExternalReference() {

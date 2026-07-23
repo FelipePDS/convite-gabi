@@ -13,6 +13,11 @@ function resolvePaymentId(requestUrl: string, body: unknown) {
     return fromQuery
   }
 
+  const legacyQueryId = url.searchParams.get('id')
+  if (legacyQueryId) {
+    return legacyQueryId
+  }
+
   if (
     body &&
     typeof body === 'object' &&
@@ -52,6 +57,8 @@ export async function POST(req: Request) {
   const rawBody = await req.json().catch(() => null)
   const paymentId = resolvePaymentId(req.url, rawBody)
   const webhookType = resolveWebhookType(req.url, rawBody)
+  const xSignature = req.headers.get('x-signature')
+  const xRequestId = req.headers.get('x-request-id')
 
   if (webhookType && webhookType !== 'payment') {
     return NextResponse.json({ received: true, ignored: webhookType })
@@ -61,21 +68,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Webhook sem data.id.' }, { status: 400 })
   }
 
-  try {
-    validateMercadoPagoWebhook({
-      xSignature: req.headers.get('x-signature'),
-      xRequestId: req.headers.get('x-request-id'),
-      dataId: paymentId,
-    })
-  } catch (error) {
-    if (isInvalidMercadoPagoWebhookError(error)) {
-      return NextResponse.json({ error: 'Assinatura do webhook invalida.' }, { status: 401 })
-    }
+  const hasSignatureHeaders = Boolean(xSignature && xRequestId)
 
-    console.error('[POST /api/webhooks/mercadopago] configuration error', error)
-    return NextResponse.json(
-      { error: 'Webhook do Mercado Pago nao configurado corretamente.' },
-      { status: 503 }
+  if (hasSignatureHeaders) {
+    try {
+      validateMercadoPagoWebhook({
+        xSignature,
+        xRequestId,
+        dataId: paymentId,
+      })
+    } catch (error) {
+      if (isInvalidMercadoPagoWebhookError(error)) {
+        return NextResponse.json({ error: 'Assinatura do webhook invalida.' }, { status: 401 })
+      }
+
+      console.error('[POST /api/webhooks/mercadopago] configuration error', error)
+      return NextResponse.json(
+        { error: 'Webhook do Mercado Pago nao configurado corretamente.' },
+        { status: 503 }
+      )
+    }
+  } else {
+    console.warn(
+      '[POST /api/webhooks/mercadopago] notification received without signature headers; processing as IPN fallback.'
     )
   }
 

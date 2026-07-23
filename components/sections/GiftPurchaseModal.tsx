@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Payment, initMercadoPago } from '@mercadopago/sdk-react'
+import { CardPayment, Payment, initMercadoPago } from '@mercadopago/sdk-react'
 import type {
-  IAdditionalCardFormData,
+  ICardPaymentFormData,
+} from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
+import type {
   IPaymentFormData,
 } from '@mercadopago/sdk-react/esm/bricks/payment/type'
 import toast from 'react-hot-toast'
@@ -69,6 +71,7 @@ type PurchaseStatusResponse = {
 }
 
 type CheckoutStep = 'form' | 'pix' | 'pending' | 'success'
+type CheckoutMethodTab = 'card' | 'pix'
 
 interface GiftPurchaseModalProps {
   gift: GiftData | null
@@ -150,6 +153,7 @@ export function GiftPurchaseModal({
 }: GiftPurchaseModalProps) {
   const [copiedPix, setCopiedPix] = useState(false)
   const [step, setStep] = useState<CheckoutStep>('form')
+  const [paymentTab, setPaymentTab] = useState<CheckoutMethodTab>('card')
   const [error, setError] = useState<string | null>(null)
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResponse | null>(null)
   const hasNotifiedSuccessRef = useRef(false)
@@ -167,6 +171,7 @@ export function GiftPurchaseModal({
   const resetState = () => {
     setCopiedPix(false)
     setStep('form')
+    setPaymentTab('card')
     setError(null)
     setCheckoutResult(null)
     hasNotifiedSuccessRef.current = false
@@ -269,9 +274,30 @@ export function GiftPurchaseModal({
   }
 
   const handlePaymentSubmit = async (
-    submission: IPaymentFormData,
-    _additionalData?: IAdditionalCardFormData | null
+    submission: IPaymentFormData
   ) => {
+    return submitCheckout({
+      paymentType: submission.paymentType,
+      selectedPaymentMethod: submission.selectedPaymentMethod,
+      formData: submission.formData,
+    })
+  }
+
+  const handleCardPaymentSubmit = async (
+    submission: ICardPaymentFormData<{ email?: string }>
+  ) => {
+    return submitCheckout({
+      paymentType: 'creditCard',
+      selectedPaymentMethod: 'creditCard',
+      formData: submission,
+    })
+  }
+
+  const submitCheckout = async (submission: {
+    paymentType?: string
+    selectedPaymentMethod: string
+    formData: unknown
+  }) => {
     if (!gift || !buyer) {
       throw new Error('Compra indisponivel nesta pagina.')
     }
@@ -498,43 +524,94 @@ export function GiftPurchaseModal({
                     <p className="text-sm font-medium">Escolha como deseja pagar</p>
                   </div>
                   <p className="text-muted-foreground mt-1 text-sm">
-                    PIX com QR Code e cartao de credito disponiveis no mesmo checkout.
+                    Escolha entre cartao de credito ou PIX com QR Code.
                   </p>
                 </div>
 
+                <div className="bg-background inline-flex w-full items-center gap-1 rounded-full border p-1">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab('card')}
+                    className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      paymentTab === 'card'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Cartao
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentTab('pix')}
+                    className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      paymentTab === 'pix'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    PIX
+                  </button>
+                </div>
+
                 <div className="rounded-2xl border px-2 py-3 sm:px-4">
-                  <Payment
-                    key={`${gift.id}-mercadopago-checkout`}
-                    initialization={{
-                      amount: gift.price ?? 0,
-                      payer: {
-                        firstName: buyerName?.firstName,
-                        lastName: buyerName?.lastName || undefined,
-                      },
-                    }}
-                    customization={{
-                      paymentMethods: {
-                        creditCard: 'all',
-                        bankTransfer: 'all',
-                        maxInstallments: 6,
-                        types: {
-                          included: ['creditCard', 'bank_transfer'],
+                  {paymentTab === 'card' ? (
+                    <CardPayment
+                      key={`${gift.id}-mercadopago-card`}
+                      initialization={{
+                        amount: gift.price ?? 0,
+                        payer: {},
+                      }}
+                      customization={{
+                        paymentMethods: {
+                          maxInstallments: 6,
+                          types: {
+                            included: ['credit_card'],
+                          },
                         },
-                      },
-                      visual: {
-                        defaultPaymentOption: {
-                          creditCardForm: true,
+                        visual: {
+                          hideFormTitle: true,
                         },
-                      },
-                    }}
-                    locale="pt-BR"
-                    onSubmit={handlePaymentSubmit}
-                    onReady={() => setError(null)}
-                    onError={(brickError) => {
-                      const message = brickError.message || 'Erro ao carregar o checkout.'
-                      setError(message)
-                    }}
-                  />
+                      }}
+                      locale="pt-BR"
+                      onSubmit={handleCardPaymentSubmit}
+                      onReady={() => setError(null)}
+                      onError={(brickError) => {
+                        const message = brickError.message || 'Erro ao carregar o checkout de cartao.'
+                        setError(message)
+                      }}
+                    />
+                  ) : (
+                    <Payment
+                      key={`${gift.id}-mercadopago-pix`}
+                      initialization={{
+                        amount: gift.price ?? 0,
+                        payer: {
+                          firstName: buyerName?.firstName,
+                          lastName: buyerName?.lastName || undefined,
+                        },
+                      }}
+                      customization={{
+                        paymentMethods: {
+                          bankTransfer: 'all',
+                          types: {
+                            included: ['bank_transfer'],
+                          },
+                        },
+                        visual: {
+                          defaultPaymentOption: {
+                            bankTransferForm: true,
+                          },
+                        },
+                      }}
+                      locale="pt-BR"
+                      onSubmit={handlePaymentSubmit}
+                      onReady={() => setError(null)}
+                      onError={(brickError) => {
+                        const message = brickError.message || 'Erro ao carregar o checkout PIX.'
+                        setError(message)
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             ) : null}
