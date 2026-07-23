@@ -1,23 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { CardPayment, Payment, initMercadoPago } from '@mercadopago/sdk-react'
-import type {
-  ICardPaymentFormData,
-} from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
-import type {
-  IPaymentFormData,
-} from '@mercadopago/sdk-react/esm/bricks/payment/type'
+import type { ICardPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
+import type { IPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/payment/type'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
-import { Check, CheckCircle2, Copy, CreditCard, Loader2, QrCode } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Check, CheckCircle2, Copy, CreditCard, Loader2, QrCode, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { safeJson } from '@/lib/safe-json'
@@ -144,6 +133,12 @@ function splitBuyerName(name: string) {
   }
 }
 
+function buildBuyerEmail(buyer: GiftBuyer | null | undefined) {
+  const digits = buyer?.phone?.replace(/\D/g, '') || ''
+  const identifier = digits || buyer?.invitationCode?.toLowerCase() || 'convidado'
+  return `${identifier}@example.com`
+}
+
 export function GiftPurchaseModal({
   gift,
   open,
@@ -158,6 +153,23 @@ export function GiftPurchaseModal({
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResponse | null>(null)
   const hasNotifiedSuccessRef = useRef(false)
 
+  const resetState = useCallback(() => {
+    setCopiedPix(false)
+    setStep('form')
+    setPaymentTab('card')
+    setError(null)
+    setCheckoutResult(null)
+    hasNotifiedSuccessRef.current = false
+  }, [])
+
+  const handleClose = useCallback((next: boolean) => {
+    if (!next) {
+      resetState()
+    }
+
+    onOpenChange(next)
+  }, [onOpenChange, resetState])
+
   useEffect(() => {
     if (mercadopagoPublicKey) {
       initMercadoPago(mercadopagoPublicKey, {
@@ -168,22 +180,31 @@ export function GiftPurchaseModal({
     }
   }, [])
 
-  const resetState = () => {
-    setCopiedPix(false)
-    setStep('form')
-    setPaymentTab('card')
-    setError(null)
-    setCheckoutResult(null)
-    hasNotifiedSuccessRef.current = false
-  }
+  useEffect(() => {
+    if (!open) return
 
-  const handleClose = (next: boolean) => {
-    if (!next) {
-      resetState()
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose(false)
+      }
     }
 
-    onOpenChange(next)
-  }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [handleClose, open])
 
   useEffect(() => {
     if (!gift || !checkoutResult) return
@@ -199,15 +220,11 @@ export function GiftPurchaseModal({
       onSuccess(gift.id)
 
       window.setTimeout(() => {
-        setCopiedPix(false)
-        setStep('form')
-        setError(null)
-        setCheckoutResult(null)
-        hasNotifiedSuccessRef.current = false
+        resetState()
         onOpenChange(false)
       }, 2200)
     }
-  }, [checkoutResult, gift, onOpenChange, onSuccess])
+  }, [checkoutResult, gift, onOpenChange, onSuccess, resetState])
 
   useEffect(() => {
     if (!open || !gift || !buyer?.invitationCode || !checkoutResult?.purchaseId) return
@@ -273,26 +290,6 @@ export function GiftPurchaseModal({
     }
   }
 
-  const handlePaymentSubmit = async (
-    submission: IPaymentFormData
-  ) => {
-    return submitCheckout({
-      paymentType: submission.paymentType,
-      selectedPaymentMethod: submission.selectedPaymentMethod,
-      formData: submission.formData,
-    })
-  }
-
-  const handleCardPaymentSubmit = async (
-    submission: ICardPaymentFormData<{ email?: string }>
-  ) => {
-    return submitCheckout({
-      paymentType: 'creditCard',
-      selectedPaymentMethod: 'creditCard',
-      formData: submission,
-    })
-  }
-
   const submitCheckout = async (submission: {
     paymentType?: string
     selectedPaymentMethod: string
@@ -343,7 +340,25 @@ export function GiftPurchaseModal({
     setStep(isPixPayment(json.payment) ? 'pix' : 'pending')
   }
 
-  if (!gift) return null
+  const handlePaymentSubmit = async (submission: IPaymentFormData) => {
+    return submitCheckout({
+      paymentType: submission.paymentType,
+      selectedPaymentMethod: submission.selectedPaymentMethod,
+      formData: submission.formData,
+    })
+  }
+
+  const handleCardPaymentSubmit = async (
+    submission: ICardPaymentFormData<{ email?: string }>
+  ) => {
+    return submitCheckout({
+      paymentType: 'creditCard',
+      selectedPaymentMethod: 'creditCard',
+      formData: submission,
+    })
+  }
+
+  if (!gift || !open) return null
 
   const canPurchase = Boolean(buyer?.invitationCode)
   const hasPrice = gift.price != null && gift.price > 0
@@ -351,287 +366,336 @@ export function GiftPurchaseModal({
   const buyerName = buyer ? splitBuyerName(buyer.name) : null
 
   return (
-    <Dialog open={open} onOpenChange={handleClose} modal={false} disablePointerDismissal>
-      <DialogContent
-        className="inset-0 h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-none p-0 sm:inset-auto sm:h-auto sm:max-h-[92vh] sm:w-[calc(100vw-1.5rem)] sm:max-w-xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:p-4"
-        initialFocus={false}
-        finalFocus={false}
-      >
-        <div className="max-h-dvh overflow-y-auto px-4 py-6 sm:max-h-[84vh] sm:px-1 sm:py-0">
-          <DialogHeader>
-            <DialogTitle>{gift.name}</DialogTitle>
-            <DialogDescription>
-              {gift.price != null
-                ? `Pagamento via Mercado Pago no valor de ${formatBRL(gift.price)}.`
-                : 'Defina um valor para este presente antes de liberar a compra.'}
-            </DialogDescription>
-          </DialogHeader>
+    <div className="fixed inset-0 z-[1000]">
+      <div
+        className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
+        aria-hidden
+        onClick={() => handleClose(false)}
+      />
 
-          <div className="space-y-5">
-            <div className="bg-muted/50 flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
-              <div>
-                <p className="text-sm font-medium">Total do presente</p>
-                <p className="text-muted-foreground text-xs">
-                  PIX ou cartão de crédito.
-                </p>
-              </div>
-              <span className="font-heading text-primary text-xl font-bold">
-                {gift.price != null ? formatBRL(gift.price) : 'A combinar'}
-              </span>
+      <div className="relative h-dvh w-screen sm:flex sm:min-h-full sm:items-center sm:justify-center sm:p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="gift-purchase-title"
+          className="relative flex h-full w-full flex-col bg-popover text-popover-foreground sm:h-auto sm:max-h-[92vh] sm:max-w-xl sm:rounded-xl sm:ring-1 sm:ring-foreground/10"
+        >
+          <button
+            type="button"
+            onClick={() => handleClose(false)}
+            className="text-muted-foreground hover:text-foreground absolute top-3 right-3 z-10 rounded-full p-2 transition-colors"
+            aria-label="Fechar modal de pagamento"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-5">
+            <div className="mb-3 pr-12">
+              <h2 id="gift-purchase-title" className="font-heading text-base font-medium">
+                {gift.name}
+              </h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                {gift.price != null
+                  ? `Pagamento via Mercado Pago no valor de ${formatBRL(gift.price)}.`
+                  : 'Defina um valor para este presente antes de liberar a compra.'}
+              </p>
             </div>
 
-            {!canPurchase && (
-              <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
-                <p className="text-sm font-medium">Compra indisponivel nesta pagina</p>
-                <p className="text-muted-foreground text-sm">
-                  Para registrar a compra, abra o seu link individual de convite.
-                </p>
+            <div className="space-y-5">
+              <div className="bg-muted/50 flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">Total do presente</p>
+                  <p className="text-muted-foreground text-xs">PIX ou cartao de credito.</p>
+                </div>
+                <span className="font-heading text-primary text-xl font-bold">
+                  {gift.price != null ? formatBRL(gift.price) : 'A combinar'}
+                </span>
               </div>
-            )}
 
-            {canPurchase && !hasPrice && (
-              <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
-                <p className="text-sm font-medium">Valor do presente nao configurado</p>
-                <p className="text-muted-foreground text-sm">
-                  Ajuste o preco deste item no admin para liberar o pagamento online.
-                </p>
-              </div>
-            )}
+              {!canPurchase && (
+                <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
+                  <p className="text-sm font-medium">Compra indisponivel nesta pagina</p>
+                  <p className="text-muted-foreground text-sm">
+                    Para registrar a compra, abra o seu link individual de convite.
+                  </p>
+                </div>
+              )}
 
-            {canPurchase && hasPrice && !mercadopagoPublicKey && (
-              <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
-                <p className="text-sm font-medium">Mercado Pago nao configurado</p>
-                <p className="text-muted-foreground text-sm">
-                  Configure a chave publica do Mercado Pago para exibir o checkout.
-                </p>
-              </div>
-            )}
+              {canPurchase && !hasPrice && (
+                <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
+                  <p className="text-sm font-medium">Valor do presente nao configurado</p>
+                  <p className="text-muted-foreground text-sm">
+                    Ajuste o preco deste item no admin para liberar o pagamento online.
+                  </p>
+                </div>
+              )}
 
-            {step === 'success' ? (
-              <div className="py-4">
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-full">
-                    <CheckCircle2 className="h-7 w-7" />
-                  </div>
-                  <div className="space-y-2">
-                    <Badge variant="secondary">Pagamento aprovado</Badge>
-                    <p className="font-heading text-lg font-semibold">Presente reservado com sucesso!</p>
-                    <p className="text-muted-foreground text-sm">
-                      Obrigado por presentear com <strong>{gift.name}</strong>.
-                    </p>
+              {canPurchase && hasPrice && !mercadopagoPublicKey && (
+                <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
+                  <p className="text-sm font-medium">Mercado Pago nao configurado</p>
+                  <p className="text-muted-foreground text-sm">
+                    Configure a chave publica do Mercado Pago para exibir o checkout.
+                  </p>
+                </div>
+              )}
+
+              {step === 'success' ? (
+                <div className="py-4">
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-full">
+                      <CheckCircle2 className="h-7 w-7" />
+                    </div>
+                    <div className="space-y-2">
+                      <Badge variant="secondary">Pagamento aprovado</Badge>
+                      <p className="font-heading text-lg font-semibold">
+                        Presente reservado com sucesso!
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        Obrigado por presentear com <strong>{gift.name}</strong>.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : step === 'pix' && checkoutResult ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <QrCode className="text-primary h-4 w-4" />
-                  <p className="text-sm font-medium">PIX gerado</p>
-                </div>
+              ) : step === 'pix' && checkoutResult ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="text-primary h-4 w-4" />
+                    <p className="text-sm font-medium">PIX gerado</p>
+                  </div>
 
-                <div className="flex flex-col items-center gap-3 rounded-2xl border bg-white px-4 py-5">
-                  {qrCodeImageSrc ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={qrCodeImageSrc}
-                      alt="QR Code do PIX"
-                      className="h-48 w-48 max-w-full rounded-xl object-contain"
-                    />
-                  ) : checkoutResult.payment.qrCode ? (
-                    <QRCode
-                      value={checkoutResult.payment.qrCode}
-                      size={180}
-                      bgColor="#ffffff"
-                      fgColor="#111111"
-                      level="M"
-                    />
-                  ) : (
-                    <div className="bg-muted flex h-48 w-48 items-center justify-center rounded-xl">
-                      <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                  <div className="flex flex-col items-center gap-3 rounded-2xl border bg-white px-4 py-5">
+                    {qrCodeImageSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={qrCodeImageSrc}
+                        alt="QR Code do PIX"
+                        className="h-48 w-48 max-w-full rounded-xl object-contain"
+                      />
+                    ) : checkoutResult.payment.qrCode ? (
+                      <QRCode
+                        value={checkoutResult.payment.qrCode}
+                        size={180}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                      />
+                    ) : (
+                      <div className="bg-muted flex h-48 w-48 items-center justify-center rounded-xl">
+                        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                      </div>
+                    )}
+
+                    <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
+                  </div>
+
+                  {checkoutResult.payment.qrCode && (
+                    <div className="bg-muted rounded-xl px-3 py-3">
+                      <div className="flex items-start gap-2">
+                        <code className="text-foreground min-w-0 flex-1 overflow-hidden whitespace-pre-wrap break-all font-mono text-[11px] leading-5 sm:text-xs">
+                          {checkoutResult.payment.qrCode}
+                        </code>
+                        <button
+                          onClick={handleCopyPix}
+                          className={`shrink-0 rounded p-1 transition-colors ${
+                            copiedPix
+                              ? 'text-green-600'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          aria-label="Copiar codigo PIX"
+                          type="button"
+                        >
+                          {copiedPix ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
 
-                  <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
-                </div>
-
-                {checkoutResult.payment.qrCode && (
-                  <div className="bg-muted rounded-xl px-3 py-3">
-                    <div className="flex items-start gap-2">
-                      <code className="text-foreground min-w-0 flex-1 overflow-hidden whitespace-pre-wrap break-all font-mono text-[11px] leading-5 sm:text-xs">
-                        {checkoutResult.payment.qrCode}
-                      </code>
-                      <button
-                        onClick={handleCopyPix}
-                        className={`shrink-0 rounded p-1 transition-colors ${
-                          copiedPix
-                            ? 'text-green-600'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                        aria-label="Copiar codigo PIX"
-                        type="button"
-                      >
-                        {copiedPix ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-muted-foreground text-center text-sm">
-                  {buildStatusMessage(checkoutResult.payment.status, gift.name)}
-                </p>
-
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => handleClose(false)}>
-                    Fechar
-                  </Button>
-                </div>
-              </div>
-            ) : step === 'pending' && checkoutResult ? (
-              <div className="space-y-4 py-4 text-center">
-                <div className="bg-primary/10 text-primary mx-auto flex h-14 w-14 items-center justify-center rounded-full">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-
-                <div className="space-y-2">
-                  <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
-                  <p className="font-heading text-lg font-semibold">Aguardando confirmacao</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-center text-sm">
                     {buildStatusMessage(checkoutResult.payment.status, gift.name)}
                   </p>
-                </div>
 
-                <div className="bg-muted/50 rounded-2xl px-4 py-3 text-left">
-                  <p className="text-sm font-medium">Resumo da transacao</p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Metodo: {checkoutResult.payment.paymentMethodId ?? 'Nao informado'}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Valor: {checkoutResult.payment.amount != null ? formatBRL(checkoutResult.payment.amount) : 'A combinar'}
-                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleClose(false)}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
                 </div>
+              ) : step === 'pending' && checkoutResult ? (
+                <div className="space-y-4 py-4 text-center">
+                  <div className="bg-primary/10 text-primary mx-auto flex h-14 w-14 items-center justify-center rounded-full">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
 
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => handleClose(false)}>
+                  <div className="space-y-2">
+                    <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
+                    <p className="font-heading text-lg font-semibold">Aguardando confirmacao</p>
+                    <p className="text-muted-foreground text-sm">
+                      {buildStatusMessage(checkoutResult.payment.status, gift.name)}
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 rounded-2xl px-4 py-3 text-left">
+                    <p className="text-sm font-medium">Resumo da transacao</p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Metodo: {checkoutResult.payment.paymentMethodId ?? 'Nao informado'}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      Valor:{' '}
+                      {checkoutResult.payment.amount != null
+                        ? formatBRL(checkoutResult.payment.amount)
+                        : 'A combinar'}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleClose(false)}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              ) : canPurchase && hasPrice && mercadopagoPublicKey ? (
+                <div className="space-y-5">
+                  <div className="bg-muted/40 rounded-2xl px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="text-primary h-4 w-4" />
+                      <p className="text-sm font-medium">Escolha como deseja pagar</p>
+                    </div>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Escolha entre cartao de credito ou PIX com QR Code.
+                    </p>
+                  </div>
+
+                  <div className="bg-background inline-flex w-full items-center gap-1 rounded-full border p-1">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentTab('card')}
+                      className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        paymentTab === 'card'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Cartao
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentTab('pix')}
+                      className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                        paymentTab === 'pix'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      PIX
+                    </button>
+                  </div>
+
+                  <div className="rounded-2xl border px-2 py-3 sm:px-4">
+                    {paymentTab === 'card' ? (
+                      <CardPayment
+                        key={`${gift.id}-mercadopago-card`}
+                        initialization={{
+                          amount: gift.price ?? 0,
+                          payer: {
+                            email: buildBuyerEmail(buyer),
+                          },
+                        }}
+                        customization={{
+                          paymentMethods: {
+                            minInstallments: 1,
+                            maxInstallments: 6,
+                            types: {
+                              included: ['credit_card'],
+                            },
+                          },
+                          visual: {
+                            hideFormTitle: true,
+                          },
+                        }}
+                        locale="pt-BR"
+                        onSubmit={handleCardPaymentSubmit}
+                        onReady={() => setError(null)}
+                        onError={(brickError) => {
+                          const message =
+                            brickError.message || 'Erro ao carregar o checkout de cartao.'
+                          setError(message)
+                        }}
+                      />
+                    ) : (
+                      <Payment
+                        key={`${gift.id}-mercadopago-pix`}
+                        initialization={{
+                          amount: gift.price ?? 0,
+                          payer: {
+                            firstName: buyerName?.firstName,
+                            lastName: buyerName?.lastName || undefined,
+                          },
+                        }}
+                        customization={{
+                          paymentMethods: {
+                            bankTransfer: 'all',
+                            types: {
+                              included: ['bank_transfer'],
+                            },
+                          },
+                          visual: {
+                            defaultPaymentOption: {
+                              bankTransferForm: true,
+                            },
+                          },
+                        }}
+                        locale="pt-BR"
+                        onSubmit={handlePaymentSubmit}
+                        onReady={() => setError(null)}
+                        onError={(brickError) => {
+                          const message = brickError.message || 'Erro ao carregar o checkout PIX.'
+                          setError(message)
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
+              {error && (
+                <p
+                  role="alert"
+                  className="bg-destructive/10 text-destructive rounded-xl px-3 py-2 text-xs"
+                >
+                  {error}
+                </p>
+              )}
+
+              {step === 'form' && (
+                <div className="flex pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleClose(false)}
+                  >
                     Fechar
                   </Button>
                 </div>
-              </div>
-            ) : canPurchase && hasPrice && mercadopagoPublicKey ? (
-              <div className="space-y-5">
-                <div className="bg-muted/40 rounded-2xl px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="text-primary h-4 w-4" />
-                    <p className="text-sm font-medium">Escolha como deseja pagar</p>
-                  </div>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Escolha entre cartao de credito ou PIX com QR Code.
-                  </p>
-                </div>
-
-                <div className="bg-background inline-flex w-full items-center gap-1 rounded-full border p-1">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentTab('card')}
-                    className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      paymentTab === 'card'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    Cartao
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentTab('pix')}
-                    className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      paymentTab === 'pix'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    PIX
-                  </button>
-                </div>
-
-                <div className="rounded-2xl border px-2 py-3 sm:px-4">
-                  {paymentTab === 'card' ? (
-                    <CardPayment
-                      key={`${gift.id}-mercadopago-card`}
-                      initialization={{
-                        amount: gift.price ?? 0,
-                        payer: {},
-                      }}
-                      customization={{
-                        paymentMethods: {
-                          maxInstallments: 6,
-                          types: {
-                            included: ['credit_card'],
-                          },
-                        },
-                        visual: {
-                          hideFormTitle: true,
-                        },
-                      }}
-                      locale="pt-BR"
-                      onSubmit={handleCardPaymentSubmit}
-                      onReady={() => setError(null)}
-                      onError={(brickError) => {
-                        const message = brickError.message || 'Erro ao carregar o checkout de cartao.'
-                        setError(message)
-                      }}
-                    />
-                  ) : (
-                    <Payment
-                      key={`${gift.id}-mercadopago-pix`}
-                      initialization={{
-                        amount: gift.price ?? 0,
-                        payer: {
-                          firstName: buyerName?.firstName,
-                          lastName: buyerName?.lastName || undefined,
-                        },
-                      }}
-                      customization={{
-                        paymentMethods: {
-                          bankTransfer: 'all',
-                          types: {
-                            included: ['bank_transfer'],
-                          },
-                        },
-                        visual: {
-                          defaultPaymentOption: {
-                            bankTransferForm: true,
-                          },
-                        },
-                      }}
-                      locale="pt-BR"
-                      onSubmit={handlePaymentSubmit}
-                      onReady={() => setError(null)}
-                      onError={(brickError) => {
-                        const message = brickError.message || 'Erro ao carregar o checkout PIX.'
-                        setError(message)
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-            ) : null}
-
-            {error && (
-              <p role="alert" className="bg-destructive/10 text-destructive rounded-xl px-3 py-2 text-xs">
-                {error}
-              </p>
-            )}
-
-            {step === 'form' && (
-              <div className="flex pt-1">
-                <Button type="button" variant="outline" className="w-full" onClick={() => handleClose(false)}>
-                  Fechar
-                </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   )
 }

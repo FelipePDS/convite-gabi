@@ -79,14 +79,21 @@ export async function POST(req: Request) {
       })
     } catch (error) {
       if (isInvalidMercadoPagoWebhookError(error)) {
-        return NextResponse.json({ error: 'Assinatura do webhook invalida.' }, { status: 401 })
+        console.warn(
+          '[POST /api/webhooks/mercadopago] invalid signature received; falling back to payment lookup.',
+          {
+            paymentId,
+            hasXSignature: Boolean(xSignature),
+            hasXRequestId: Boolean(xRequestId),
+          }
+        )
+      } else {
+        console.error('[POST /api/webhooks/mercadopago] configuration error', error)
+        return NextResponse.json(
+          { error: 'Webhook do Mercado Pago nao configurado corretamente.' },
+          { status: 503 }
+        )
       }
-
-      console.error('[POST /api/webhooks/mercadopago] configuration error', error)
-      return NextResponse.json(
-        { error: 'Webhook do Mercado Pago nao configurado corretamente.' },
-        { status: 503 }
-      )
     }
   } else {
     console.warn(

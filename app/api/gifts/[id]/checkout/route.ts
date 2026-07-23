@@ -21,7 +21,7 @@ const formDataSchema = z
     installments: z.coerce.number().int().positive().optional(),
     payer: z
       .object({
-        email: z.string().email(),
+        email: z.string().email().optional(),
         first_name: z.string().optional(),
         last_name: z.string().optional(),
         identification: z
@@ -115,6 +115,15 @@ function splitGuestName(name: string) {
     firstName,
     lastName: rest.join(' ') || 'Convite',
   }
+}
+
+function buildGuestFallbackEmail(input: {
+  invitationCode: string
+  phone: string | null
+}) {
+  const phoneDigits = input.phone?.replace(/\D/g, '') || ''
+  const identifier = phoneDigits || input.invitationCode.toLowerCase()
+  return `${identifier}@example.com`
 }
 
 export async function POST(
@@ -232,6 +241,10 @@ export async function POST(
     createdPurchaseId = purchaseContext.purchase.id
 
     const { firstName, lastName } = splitGuestName(guest.name)
+    const fallbackEmail = buildGuestFallbackEmail({
+      invitationCode,
+      phone: guest.phone,
+    })
     const paymentClient = getMercadoPagoPaymentClient()
     const paymentResponse = await paymentClient.create({
       body: {
@@ -246,6 +259,7 @@ export async function POST(
             : undefined,
         payer: {
           ...parsed.data.formData.payer,
+          email: parsed.data.formData.payer.email ?? fallbackEmail,
           first_name: parsed.data.formData.payer.first_name ?? firstName,
           last_name: parsed.data.formData.payer.last_name ?? lastName,
         },
