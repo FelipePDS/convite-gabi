@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { CardPayment, Payment, initMercadoPago } from '@mercadopago/sdk-react'
 import type { ICardPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
 import type { IPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/payment/type'
+import toast from 'react-hot-toast'
 import {
   ArrowLeft,
   Check,
@@ -133,6 +134,35 @@ function buildQrCodeImageSrc(base64: string | null) {
   return base64.startsWith('data:image') ? base64 : `data:image/png;base64,${base64}`
 }
 
+function showCheckoutErrorToast(message: string) {
+  toast.custom(
+    (currentToast) => (
+      <div className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 shadow-lg">
+        <div className="bg-destructive/10 text-destructive flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+          <X className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-sm font-semibold">Nao foi possivel concluir o pagamento</p>
+          <p className="text-muted-foreground text-sm leading-5">{message}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => toast.dismiss(currentToast.id)}
+          className="text-muted-foreground hover:text-foreground rounded-full p-1 transition-colors"
+          aria-label="Fechar mensagem de erro"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    ),
+    {
+      id: 'gift-purchase-error',
+      duration: Infinity,
+      position: 'top-center',
+    }
+  )
+}
+
 function buildBuyerEmail(buyer: GiftBuyer | null | undefined) {
   const digits = buyer?.phone?.replace(/\D/g, '') || ''
   const identifier = digits || buyer?.invitationCode?.toLowerCase() || 'convidado'
@@ -192,7 +222,6 @@ export function GiftPurchaseModal({
   const [step, setStep] = useState<CheckoutStep>('form')
   const [paymentTab, setPaymentTab] = useState<CheckoutMethodTab>('card')
   const [selectedFlow, setSelectedFlow] = useState<CheckoutFlow | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResponse | null>(null)
   const [reserveSubmitting, setReserveSubmitting] = useState(false)
   const [successMode, setSuccessMode] = useState<SuccessMode>('payment')
@@ -203,7 +232,6 @@ export function GiftPurchaseModal({
     setStep('form')
     setPaymentTab('card')
     setSelectedFlow(null)
-    setError(null)
     setCheckoutResult(null)
     setReserveSubmitting(false)
     setSuccessMode('payment')
@@ -331,8 +359,6 @@ export function GiftPurchaseModal({
       throw new Error('Compra indisponivel nesta pagina.')
     }
 
-    setError(null)
-
     const res = await fetch(`/api/gifts/${gift.id}/checkout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -348,7 +374,7 @@ export function GiftPurchaseModal({
 
     if (!res.ok) {
       const message = json.error ?? 'Nao foi possivel iniciar o pagamento.'
-      setError(message)
+      showCheckoutErrorToast(message)
       return
     }
 
@@ -362,7 +388,7 @@ export function GiftPurchaseModal({
 
     if (isTerminalFailure(json.payment.status)) {
       setStep('form')
-      setError(
+      showCheckoutErrorToast(
         json.payment.statusDetail
           ? `Pagamento nao aprovado: ${json.payment.statusDetail}.`
           : buildStatusMessage(json.payment.status, gift.name)
@@ -401,7 +427,7 @@ export function GiftPurchaseModal({
       setCopiedPix(true)
       window.setTimeout(() => setCopiedPix(false), 2500)
     } catch {
-      setError('Copie o codigo PIX manualmente.')
+      showCheckoutErrorToast('Copie o codigo PIX manualmente.')
     }
   }
 
@@ -409,7 +435,6 @@ export function GiftPurchaseModal({
     if (!gift || !buyer?.invitationCode) return
 
     setReserveSubmitting(true)
-    setError(null)
 
     try {
       const res = await fetch(`/api/gifts/${gift.id}/reserve`, {
@@ -423,7 +448,7 @@ export function GiftPurchaseModal({
       const json = await safeJson<{ error?: string }>(res)
 
       if (!res.ok) {
-        setError(json.error ?? 'Nao foi possivel reservar este presente agora.')
+        showCheckoutErrorToast(json.error ?? 'Nao foi possivel reservar este presente agora.')
         return
       }
 
@@ -442,7 +467,6 @@ export function GiftPurchaseModal({
     if (!gift || !buyer?.invitationCode) return
 
     setReserveSubmitting(true)
-    setError(null)
 
     try {
       const res = await fetch(`/api/gifts/${gift.id}/reserve`, {
@@ -456,7 +480,7 @@ export function GiftPurchaseModal({
       const json = await safeJson<{ error?: string }>(res)
 
       if (!res.ok) {
-        setError(json.error ?? 'Nao foi possivel remover a reserva agora.')
+        showCheckoutErrorToast(json.error ?? 'Nao foi possivel remover a reserva agora.')
         return
       }
 
@@ -687,7 +711,6 @@ export function GiftPurchaseModal({
                           type="button"
                           onClick={() => {
                             setSelectedFlow('online')
-                            setError(null)
                           }}
                           disabled={!canUseOnlineCheckout}
                           className="bg-background hover:border-primary/40 flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -707,7 +730,6 @@ export function GiftPurchaseModal({
                           type="button"
                           onClick={() => {
                             setSelectedFlow('manual')
-                            setError(null)
                           }}
                           disabled={!canManageManualFlow}
                           className="bg-background hover:border-primary/40 flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
@@ -746,7 +768,6 @@ export function GiftPurchaseModal({
                           className="shrink-0 gap-1"
                           onClick={() => {
                             setSelectedFlow(null)
-                            setError(null)
                           }}
                         >
                           <ArrowLeft className="h-4 w-4" />
@@ -802,11 +823,10 @@ export function GiftPurchaseModal({
                           }}
                           locale="pt-BR"
                           onSubmit={handleCardPaymentSubmit}
-                          onReady={() => setError(null)}
                           onError={(brickError) => {
                             const message =
                               brickError.message || 'Erro ao carregar o checkout de cartao.'
-                            setError(message)
+                            showCheckoutErrorToast(message)
                           }}
                         />
                       ) : (
@@ -834,11 +854,10 @@ export function GiftPurchaseModal({
                           }}
                           locale="pt-BR"
                           onSubmit={handlePixPaymentSubmit}
-                          onReady={() => setError(null)}
                           onError={(brickError) => {
                             const message =
                               brickError.message || 'Erro ao carregar o checkout PIX.'
-                            setError(message)
+                            showCheckoutErrorToast(message)
                           }}
                         />
                       )}
@@ -865,7 +884,6 @@ export function GiftPurchaseModal({
                           className="shrink-0 gap-1"
                           onClick={() => {
                             setSelectedFlow(null)
-                            setError(null)
                           }}
                         >
                           <ArrowLeft className="h-4 w-4" />
@@ -933,15 +951,6 @@ export function GiftPurchaseModal({
                     </div>
                   )}
                 </div>
-              )}
-
-              {error && (
-                <p
-                  role="alert"
-                  className="bg-destructive/10 text-destructive rounded-xl px-3 py-2 text-xs"
-                >
-                  {error}
-                </p>
               )}
 
               {step === 'form' && (

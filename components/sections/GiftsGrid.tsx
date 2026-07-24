@@ -45,7 +45,17 @@ export function GiftsGrid({ initialGifts, buyer = null }: GiftsGridProps) {
         )
       )
     )
-    setOpenGift(null)
+    setOpenGift((current) => {
+      if (!current || current.id !== giftId) {
+        return current
+      }
+
+      return {
+        ...current,
+        ...updates,
+        status: updates?.status ?? 'RESERVED',
+      }
+    })
   }
 
   if (gifts.length === 0) {
