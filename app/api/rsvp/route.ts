@@ -37,13 +37,13 @@ export async function POST(req: Request) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'Corpo da requisicao invalido' }, { status: 400 })
+    return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
   }
 
   const parsed = apiSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Dados invalidos', details: parsed.error.flatten().fieldErrors },
+      { error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors },
       { status: 422 }
     )
   }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
   if (totalGuestCount > 20) {
     return NextResponse.json(
-      { error: 'Maximo de 20 pessoas por confirmacao.' },
+      { error: 'Máximo de 20 pessoas por confirmação.' },
       { status: 422 }
     )
   }

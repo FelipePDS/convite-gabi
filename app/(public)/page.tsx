@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const event = await getEventSettings()
   const description =
     event.description?.split('\n')[0]?.slice(0, 160) ??
-    'Voce esta convidado para uma celebracao especial! Confirme sua presenca.'
+    'Você está convidado para uma celebração especial! Confirme sua presença.'
 
   return {
     title: event.title,

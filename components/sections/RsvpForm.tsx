@@ -121,7 +121,9 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     }
 
     setConfirmedName(json.name ?? data.name)
-    setConfirmedCompanions(json.companionNames ?? data.companionNames.map((companion) => companion.name))
+    setConfirmedCompanions(
+      json.companionNames ?? data.companionNames.map((companion) => companion.name)
+    )
     setShowSuccess(true)
   }
 
@@ -198,9 +200,6 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
                   <Users className="text-primary h-4 w-4" />
                   <p className="text-sm font-semibold">Acompanhantes</p>
                 </div>
-                <p className="text-muted-foreground text-sm">
-                  Adicione apenas o nome de cada acompanhante. Voce pode incluir mais pessoas ou remover depois, mesmo apos confirmar.
-                </p>
               </div>
 
               <Button
@@ -287,12 +286,12 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Salvando confirmacao...
+              Salvando confirmação...
             </>
           ) : confirmedName ? (
-            'Atualizar confirmacao'
+            'Atualizar confirmação'
           ) : (
-            'Confirmar presenca'
+            <>✦ Confirmar presença</>
           )}
         </Button>
       </motion.form>

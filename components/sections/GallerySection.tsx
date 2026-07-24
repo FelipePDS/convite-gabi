@@ -12,7 +12,6 @@ export async function GallerySection() {
       aria-labelledby="gallery-title"
     >
       <div className="mx-auto max-w-6xl px-4 md:px-8">
-        {/* Heading */}
         <SectionReveal>
           <p className="text-primary mb-3 text-xs font-medium uppercase tracking-[0.3em]">
             ✦ Memórias ✦
@@ -34,7 +33,6 @@ export async function GallerySection() {
           </p>
         </SectionReveal>
 
-        {/* Grid */}
         <GalleryGrid items={items} />
       </div>
     </section>

@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guest = await getGuestByInviteCode(code)
 
   if (!guest) {
-    return { title: 'Convite invalido', robots: { index: false } }
+    return { title: 'Convite inválido', robots: { index: false } }
   }
 
   return {
     title: `Convite para ${guest.name}`,
-    description: 'Voce foi convidado para uma celebracao especial!',
+    description: 'Você foi convidado para uma celebração especial!',
     robots: { index: false, follow: false },
   }
 }
@@ -43,17 +43,17 @@ export default async function InvitePage({ params }: Props) {
           <AlertCircle className="h-8 w-8" />
         </div>
         <div className="space-y-2">
-          <h1 className="font-heading text-2xl font-bold">Convite nao encontrado</h1>
+          <h1 className="font-heading text-2xl font-bold">Convite não encontrado</h1>
           <p className="text-muted-foreground max-w-sm">
-            Este link de convite e invalido ou ja expirou. Voce ainda pode confirmar
-            presenca pela pagina principal.
+            Este link de convite é inválido ou já expirou. Você ainda pode confirmar
+            presença pela página principal.
           </p>
         </div>
         <Link
           href="/#confirmar"
           className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-xl px-6 text-sm font-medium transition-colors"
         >
-          Confirmar presenca
+          Confirmar presença
         </Link>
       </div>
     )

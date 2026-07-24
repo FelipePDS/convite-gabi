@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { motion, AnimatePresence, type PanInfo } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { extractYouTubeId } from '@/lib/youtube'
 import type { GalleryItemData } from '@/services/gallery'
 
@@ -40,24 +40,24 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
   const goPrev = useCallback(() => go(index - 1), [go, index])
   const goNext = useCallback(() => go(index + 1), [go, index])
 
-  // Keyboard navigation
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') goPrev()
-      if (e.key === 'ArrowRight') goNext()
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+      if (event.key === 'ArrowLeft') goPrev()
+      if (event.key === 'ArrowRight') goNext()
     }
+
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onClose, goPrev, goNext])
+  }, [goNext, goPrev, onClose])
 
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [])
 
-  // Drag/swipe detection
   const handleDragEnd = (_: PointerEvent, info: PanInfo) => {
     if (info.offset.x < -80) goNext()
     else if (info.offset.x > 80) goPrev()
@@ -67,7 +67,6 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
 
   return (
     <AnimatePresence>
-      {/* Backdrop */}
       <motion.div
         key="backdrop"
         initial={{ opacity: 0 }}
@@ -79,10 +78,9 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
         aria-modal="true"
         aria-label={`Galeria — item ${index + 1} de ${items.length}`}
       >
-        {/* Top bar */}
         <div
           className="flex shrink-0 items-center justify-between px-4 py-3 sm:px-6"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
         >
           <span className="text-sm font-medium text-white/60">
             {index + 1} / {items.length}
@@ -101,12 +99,10 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
           </button>
         </div>
 
-        {/* Main media area */}
         <div
           className="relative flex flex-1 items-center justify-center overflow-hidden px-12"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
         >
-          {/* Prev arrow */}
           {index > 0 && (
             <button
               className="absolute left-2 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:left-4"
@@ -117,7 +113,6 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
             </button>
           )}
 
-          {/* Media */}
           <AnimatePresence mode="popLayout" custom={direction}>
             <motion.div
               key={current.id}
@@ -162,7 +157,6 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
             </motion.div>
           </AnimatePresence>
 
-          {/* Next arrow */}
           {index < items.length - 1 && (
             <button
               className="absolute right-2 z-10 flex h-10 w-10 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:right-4"
@@ -174,19 +168,18 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
           )}
         </div>
 
-        {/* Dot indicators */}
         {items.length > 1 && items.length <= 20 && (
           <div
             className="flex shrink-0 justify-center gap-1.5 py-4"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
-            {items.map((_, i) => (
+            {items.map((_, itemIndex) => (
               <button
-                key={i}
-                onClick={() => go(i)}
-                aria-label={`Ir para item ${i + 1}`}
+                key={itemIndex}
+                onClick={() => go(itemIndex)}
+                aria-label={`Ir para item ${itemIndex + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/30'
+                  itemIndex === index ? 'w-5 bg-white' : 'w-1.5 bg-white/30'
                 }`}
               />
             ))}

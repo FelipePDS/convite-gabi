@@ -28,13 +28,13 @@ export async function POST(
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'Corpo invalido' }, { status: 400 })
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
   }
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Dados invalidos', details: parsed.error.flatten().fieldErrors },
+      { error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors },
       { status: 422 }
     )
   }
@@ -46,7 +46,7 @@ export async function POST(
 
     if (!guest) {
       return NextResponse.json(
-        { error: 'Codigo de convite invalido. Use o link que voce recebeu.' },
+        { error: 'Código de convite inválido. Use o link que você recebeu.' },
         { status: 403 }
       )
     }
@@ -109,11 +109,11 @@ export async function POST(
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'NOT_FOUND') {
-        return NextResponse.json({ error: 'Presente nao encontrado' }, { status: 404 })
+        return NextResponse.json({ error: 'Presente não encontrado' }, { status: 404 })
       }
 
       if (error.name === 'ALREADY_RESERVED') {
-        return NextResponse.json({ error: 'Este presente ja foi reservado.' }, { status: 409 })
+        return NextResponse.json({ error: 'Este presente já foi reservado.' }, { status: 409 })
       }
     }
 
@@ -132,13 +132,13 @@ export async function DELETE(
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'Corpo invalido' }, { status: 400 })
+    return NextResponse.json({ error: 'Corpo inválido' }, { status: 400 })
   }
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Dados invalidos', details: parsed.error.flatten().fieldErrors },
+      { error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors },
       { status: 422 }
     )
   }
@@ -150,7 +150,7 @@ export async function DELETE(
 
     if (!guest) {
       return NextResponse.json(
-        { error: 'Codigo de convite invalido. Use o link que voce recebeu.' },
+        { error: 'Código de convite inválido. Use o link que você recebeu.' },
         { status: 403 }
       )
     }
@@ -215,11 +215,11 @@ export async function DELETE(
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === 'NOT_FOUND') {
-        return NextResponse.json({ error: 'Presente nao encontrado' }, { status: 404 })
+        return NextResponse.json({ error: 'Presente não encontrado' }, { status: 404 })
       }
 
       if (error.name === 'NOT_RESERVED') {
-        return NextResponse.json({ error: 'Este presente nao esta reservado.' }, { status: 409 })
+        return NextResponse.json({ error: 'Este presente não está reservado.' }, { status: 409 })
       }
     }
 

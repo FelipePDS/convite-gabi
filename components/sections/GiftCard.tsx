@@ -103,12 +103,12 @@ export function GiftCard({
               canUndoReservation
                 ? `Gerenciar reserva de ${gift.name}`
                 : isReserved
-                  ? `${gift.name} ja foi reservado`
+                  ? `${gift.name} já foi reservado`
                   : disabled
                     ? gift.price == null && !gift.purchaseUrl
-                      ? `${gift.name} ainda nao possui valor nem link configurados`
+                      ? `${gift.name} ainda não possui valor nem link configurados`
                       : `Use seu link de convite para comprar ${gift.name}`
-                    : `Abrir opcoes de presente para ${gift.name}`
+                    : `Abrir opções de presente para ${gift.name}`
             }
           >
             {canUndoReservation
@@ -117,7 +117,7 @@ export function GiftCard({
                 ? 'Reservado'
                 : disabled
                   ? gift.price == null && !gift.purchaseUrl
-                    ? 'Indisponivel'
+                    ? 'Indisponível'
                     : 'Use seu link de convite'
                   : 'Presentear'}
           </Button>

@@ -13,11 +13,11 @@ export const rsvpSchema = z
     name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
     phone: z
       .string()
-      .min(10, 'Telefone invalido - inclua o DDD')
+      .min(10, 'Telefone inválido - inclua o DDD')
       .max(20)
-      .regex(/^[\d\s()\-\+]+$/, 'Telefone invalido'),
-    companionNames: z.array(companionSchema).max(19, 'Maximo de 19 acompanhantes'),
-    message: z.string().max(500, 'Maximo de 500 caracteres').optional(),
+      .regex(/^[\d\s()\-\+]+$/, 'Telefone inválido'),
+    companionNames: z.array(companionSchema).max(19, 'Máximo de 19 acompanhantes'),
+    message: z.string().max(500, 'Máximo de 500 caracteres').optional(),
     invitationCode: z.string().optional(),
   })
   .superRefine((data, ctx) => {
@@ -25,7 +25,7 @@ export const rsvpSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['companionNames'],
-        message: 'Maximo de 20 pessoas por confirmacao.',
+        message: 'Máximo de 20 pessoas por confirmação.',
       })
     }
 
@@ -36,7 +36,7 @@ export const rsvpSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['companionNames', index, 'name'],
-          message: 'Este acompanhante ja foi adicionado.',
+          message: 'Este acompanhante já foi adicionado.',
         })
         continue
       }

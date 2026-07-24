@@ -18,9 +18,9 @@ const playfair = Playfair_Display({
 })
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-const DEFAULT_TITLE = 'Convite - Aniversario da Gabi'
+const DEFAULT_TITLE = 'Convite - Aniversário da Gabi'
 const DEFAULT_DESCRIPTION =
-  'Voce esta convidado para uma celebracao especial! Confirme sua presenca.'
+  'Você está convidado para uma celebração especial! Confirme sua presença.'
 const SHARE_IMAGE = '/images/capa.jpeg'
 
 export const viewport: Viewport = {
@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     default: DEFAULT_TITLE,
-    template: '%s | Aniversario da Gabi',
+    template: '%s | Aniversário da Gabi',
   },
   description: DEFAULT_DESCRIPTION,
   metadataBase: new URL(BASE_URL),
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: BASE_URL,
-    siteName: 'Aniversario da Gabi',
+    siteName: 'Aniversário da Gabi',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     images: [

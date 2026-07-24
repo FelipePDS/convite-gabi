@@ -87,7 +87,7 @@ interface GiftPurchaseModalProps {
 
 const statusLabel: Record<PaymentStatus, string> = {
   PENDING: 'Aguardando pagamento',
-  IN_PROCESS: 'Pagamento em analise',
+  IN_PROCESS: 'Pagamento em análise',
   APPROVED: 'Pagamento aprovado',
   REJECTED: 'Pagamento recusado',
   CANCELLED: 'Pagamento cancelado',
@@ -97,15 +97,15 @@ const statusLabel: Record<PaymentStatus, string> = {
 function buildStatusMessage(status: PaymentStatus, giftName: string) {
   switch (status) {
     case 'APPROVED':
-      return `O pagamento do presente ${giftName} foi confirmado e a reserva ja foi registrada.`
+      return `O pagamento do presente ${giftName} foi confirmado e a reserva já foi registrada.`
     case 'IN_PROCESS':
-      return 'O pagamento foi recebido e esta em analise. A reserva sera confirmada assim que o provedor aprovar.'
+      return 'O pagamento foi recebido e está em análise. A reserva será confirmada assim que o provedor aprovar.'
     case 'PENDING':
       return 'Finalize o pagamento para que o presente seja reservado automaticamente.'
     case 'REJECTED':
-      return 'O pagamento foi recusado. Voce pode tentar novamente com outro cartao.'
+      return 'O pagamento foi recusado. Você pode tentar novamente com outro cartão.'
     case 'CANCELLED':
-      return 'O pagamento foi cancelado antes da confirmacao.'
+      return 'O pagamento foi cancelado antes da confirmação.'
     case 'REFUNDED':
       return 'O pagamento foi estornado pelo provedor.'
     default:
@@ -142,7 +142,7 @@ function showCheckoutErrorToast(message: string) {
           <X className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-sm font-semibold">Nao foi possivel concluir o pagamento</p>
+          <p className="text-sm font-semibold">Não foi possível concluir o pagamento</p>
           <p className="text-muted-foreground text-sm leading-5">{message}</p>
         </div>
         <button
@@ -193,13 +193,13 @@ function getSuccessContent(mode: SuccessMode, giftName: string) {
       return {
         badge: 'Reserva registrada',
         title: 'Presente reservado com sucesso!',
-        description: `Voce reservou ${giftName} para comprar por fora.`,
+        description: `Você reservou ${giftName} para comprar por fora.`,
       }
     case 'unreserve':
       return {
         badge: 'Reserva removida',
         title: 'Reserva desfeita com sucesso!',
-        description: `O presente ${giftName} voltou a ficar disponivel.`,
+        description: `O presente ${giftName} voltou a ficar disponível.`,
       }
     case 'payment':
     default:
@@ -356,7 +356,7 @@ export function GiftPurchaseModal({
     formData: unknown
   }) => {
     if (!gift || !buyer) {
-      throw new Error('Compra indisponivel nesta pagina.')
+      throw new Error('Compra indisponível nesta página.')
     }
 
     const res = await fetch(`/api/gifts/${gift.id}/checkout`, {
@@ -373,7 +373,7 @@ export function GiftPurchaseModal({
     const json = await safeJson<CheckoutResponse & { error?: string }>(res)
 
     if (!res.ok) {
-      const message = json.error ?? 'Nao foi possivel iniciar o pagamento.'
+      const message = json.error ?? 'Não foi possível iniciar o pagamento.'
       showCheckoutErrorToast(message)
       return
     }
@@ -390,7 +390,7 @@ export function GiftPurchaseModal({
       setStep('form')
       showCheckoutErrorToast(
         json.payment.statusDetail
-          ? `Pagamento nao aprovado: ${json.payment.statusDetail}.`
+          ? `Pagamento não aprovado: ${json.payment.statusDetail}.`
           : buildStatusMessage(json.payment.status, gift.name)
       )
       return
@@ -427,7 +427,7 @@ export function GiftPurchaseModal({
       setCopiedPix(true)
       window.setTimeout(() => setCopiedPix(false), 2500)
     } catch {
-      showCheckoutErrorToast('Copie o codigo PIX manualmente.')
+      showCheckoutErrorToast('Copie o código PIX manualmente.')
     }
   }
 
@@ -448,7 +448,7 @@ export function GiftPurchaseModal({
       const json = await safeJson<{ error?: string }>(res)
 
       if (!res.ok) {
-        showCheckoutErrorToast(json.error ?? 'Nao foi possivel reservar este presente agora.')
+        showCheckoutErrorToast(json.error ?? 'Não foi possível reservar este presente agora.')
         return
       }
 
@@ -480,7 +480,7 @@ export function GiftPurchaseModal({
       const json = await safeJson<{ error?: string }>(res)
 
       if (!res.ok) {
-        showCheckoutErrorToast(json.error ?? 'Nao foi possivel remover a reserva agora.')
+        showCheckoutErrorToast(json.error ?? 'Não foi possível remover a reserva agora.')
         return
       }
 
@@ -537,7 +537,7 @@ export function GiftPurchaseModal({
               </h2>
               <p className="text-muted-foreground mt-2 text-sm">
                 {gift.price != null
-                  ? `Escolha entre pagar com cartao, PIX ou abrir o link do presente para comprar por fora.`
+                  ? `Escolha entre pagar com cartão, PIX ou abrir o link do presente para comprar por fora.`
                   : 'Use o link do presente para comprar por fora e depois reserve este item.'}
               </p>
             </div>
@@ -547,7 +547,7 @@ export function GiftPurchaseModal({
                 <div>
                   <p className="text-sm font-medium">Valor do presente</p>
                   <p className="text-muted-foreground text-xs">
-                    Cartao, PIX ou reserva manual pelo link.
+                    Cartão, PIX ou reserva manual pelo link.
                   </p>
                 </div>
                 <span className="font-heading text-primary text-xl font-bold">
@@ -557,7 +557,7 @@ export function GiftPurchaseModal({
 
               {!canPurchase && (
                 <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
-                  <p className="text-sm font-medium">Compra indisponivel nesta pagina</p>
+                  <p className="text-sm font-medium">Compra indisponível nesta página</p>
                   <p className="text-muted-foreground text-sm">
                     Para registrar compra ou reserva, abra o seu link individual de convite.
                   </p>
@@ -631,7 +631,7 @@ export function GiftPurchaseModal({
                               ? 'text-green-600'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
-                          aria-label="Copiar codigo PIX"
+                          aria-label="Copiar código PIX"
                           type="button"
                         >
                           {copiedPix ? (
@@ -665,16 +665,16 @@ export function GiftPurchaseModal({
 
                   <div className="space-y-2">
                     <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
-                    <p className="font-heading text-lg font-semibold">Aguardando confirmacao</p>
+                    <p className="font-heading text-lg font-semibold">Aguardando confirmação</p>
                     <p className="text-muted-foreground text-sm">
                       {buildStatusMessage(checkoutResult.payment.status, gift.name)}
                     </p>
                   </div>
 
                   <div className="bg-muted/50 rounded-2xl px-4 py-3 text-left">
-                    <p className="text-sm font-medium">Resumo da transacao</p>
+                    <p className="text-sm font-medium">Resumo da transação</p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      Metodo: {checkoutResult.payment.paymentMethodId ?? 'Nao informado'}
+                      Método: {checkoutResult.payment.paymentMethodId ?? 'Não informado'}
                     </p>
                     <p className="text-muted-foreground text-sm">
                       Valor:{' '}
@@ -700,9 +700,9 @@ export function GiftPurchaseModal({
                   {!selectedFlow && (canUseOnlineCheckout || canManageManualFlow) && (
                     <div className="space-y-4">
                       <div className="space-y-1 rounded-2xl border border-dashed px-4 py-4">
-                        <p className="text-sm font-medium">Como voce prefere seguir?</p>
+                        <p className="text-sm font-medium">Como você prefere seguir?</p>
                         <p className="text-muted-foreground text-sm">
-                          Escolha uma das opcoes abaixo. Se quiser garantir o presente agora, use o pagamento online. Se preferir comprar por fora ou pagar localmente, use a reserva manual.
+                          Escolha uma das opções abaixo. Se quiser garantir o presente agora, use o pagamento online. Se preferir comprar por fora ou pagar localmente, use a reserva manual.
                         </p>
                       </div>
 
@@ -721,7 +721,7 @@ export function GiftPurchaseModal({
                           <div className="space-y-1">
                             <p className="text-sm font-semibold">Presentear agora</p>
                             <p className="text-muted-foreground text-sm">
-                              Pague com cartao ou PIX. A reserva do presente acontece automaticamente quando o pagamento for confirmado.
+                              Pague com cartão ou PIX. A reserva do presente acontece automaticamente quando o pagamento for confirmado.
                             </p>
                           </div>
                         </button>
@@ -740,7 +740,7 @@ export function GiftPurchaseModal({
                           <div className="space-y-1">
                             <p className="text-sm font-semibold">Pagar localmente ou comprar por fora</p>
                             <p className="text-muted-foreground text-sm">
-                              Abra o link do presente, compre fora do site e use a reserva para avisar que esse item ficou com voce.
+                              Abra o link do presente, compre fora do site e use a reserva para avisar que esse item ficou com você.
                             </p>
                           </div>
                         </button>
@@ -757,7 +757,7 @@ export function GiftPurchaseModal({
                             <p className="text-sm font-medium">Presentear agora</p>
                           </div>
                           <p className="text-muted-foreground text-sm">
-                            Escolha cartao ou PIX. O presente sera reservado automaticamente quando o pagamento for confirmado.
+                            Escolha cartão ou PIX. O presente será reservado automaticamente quando o pagamento for confirmado.
                           </p>
                         </div>
 
@@ -785,7 +785,7 @@ export function GiftPurchaseModal({
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
-                          Cartao
+                          Cartão
                         </button>
                         <button
                           type="button"
@@ -825,7 +825,7 @@ export function GiftPurchaseModal({
                           onSubmit={handleCardPaymentSubmit}
                           onError={(brickError) => {
                             const message =
-                              brickError.message || 'Erro ao carregar o checkout de cartao.'
+                              brickError.message || 'Erro ao carregar o checkout de cartão.'
                             showCheckoutErrorToast(message)
                           }}
                         />
@@ -873,7 +873,7 @@ export function GiftPurchaseModal({
                             <p className="text-sm font-medium">Pagar localmente ou comprar por fora</p>
                           </div>
                           <p className="text-muted-foreground text-sm">
-                            Use esta opcao se voce prefere comprar fora do site e apenas registrar a reserva do presente aqui.
+                            Use esta opção se você prefere comprar fora do site e apenas registrar a reserva do presente aqui.
                           </p>
                         </div>
 
@@ -936,17 +936,17 @@ export function GiftPurchaseModal({
 
                       <p className="text-muted-foreground text-xs leading-5">
                         {gift.canUndoReservation
-                          ? 'Esta reserva foi feita por voce. Se mudar de ideia, pode remove-la por aqui.'
-                          : 'A reserva manual serve para evitar que outra pessoa escolha o mesmo presente antes de voce concluir a compra por fora.'}
+                          ? 'Esta reserva foi feita por você. Se mudar de ideia, pode removê-la por aqui.'
+                          : 'A reserva manual serve para evitar que outra pessoa escolha o mesmo presente antes de você concluir a compra por fora.'}
                       </p>
                     </div>
                   )}
 
                   {canPurchase && !canUseOnlineCheckout && !gift.purchaseUrl && (
                     <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
-                      <p className="text-sm font-medium">Presente sem opcao configurada</p>
+                      <p className="text-sm font-medium">Presente sem opção configurada</p>
                       <p className="text-muted-foreground text-sm">
-                        Configure um preco para pagamento com cartao ou PIX, ou cadastre um link do presente no admin.
+                        Configure um preço para pagamento com cartão ou PIX, ou cadastre um link do presente no admin.
                       </p>
                     </div>
                   )}

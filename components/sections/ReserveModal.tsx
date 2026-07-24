@@ -66,7 +66,7 @@ export function ReserveModal({
     const json = await res.json().catch(() => ({}))
 
     if (res.status === 409) {
-      setError('root', { message: 'Este presente ja foi reservado por outra pessoa.' })
+      setError('root', { message: 'Este presente já foi reservado por outra pessoa.' })
       return
     }
 
@@ -101,14 +101,14 @@ export function ReserveModal({
             <DialogHeader>
               <DialogTitle>Reservar presente</DialogTitle>
               <DialogDescription>
-                {gift?.name} - informe o codigo do convite para reservar.
+                {gift?.name} - informe o código do convite para reservar.
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="reserve-code">
-                  Codigo de convite *
+                  Código de convite *
                   {invitationCode && (
                     <span className="text-muted-foreground ml-1 text-xs font-normal">
                       (preenchido)

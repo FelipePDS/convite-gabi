@@ -75,7 +75,7 @@ export function RsvpSuccess({
       </motion.div>
 
       <div className="space-y-2">
-        <h3 className="font-heading text-2xl font-bold">Presenca confirmada!</h3>
+        <h3 className="font-heading text-2xl font-bold">Presença confirmada!</h3>
         <p className="text-muted-foreground">
           Que alegria, <span className="text-foreground font-semibold">{guestName}</span>!
           <br />
@@ -86,7 +86,7 @@ export function RsvpSuccess({
 
       <div className="text-primary flex items-center gap-2 text-sm font-medium">
         <PartyPopper className="h-4 w-4" />
-        <span>Vai ser incrivel!</span>
+        <span>Vai ser incrível!</span>
         <Heart className="h-4 w-4 fill-current" />
       </div>
 
@@ -98,7 +98,7 @@ export function RsvpSuccess({
         {companions.length > 0 ? (
           <div className="space-y-1">
             <p className="text-muted-foreground text-sm">
-              {companions.length} acompanhante(s) confirmado(s) com voce:
+              {companions.length} acompanhante(s) confirmado(s) com você:
             </p>
             <ul className="space-y-1 text-sm">
               {companions.map((companion) => (

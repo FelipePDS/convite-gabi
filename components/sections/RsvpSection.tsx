@@ -23,7 +23,6 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
       aria-labelledby="rsvp-title"
     >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-4 md:px-8">
-        {/* Heading */}
         <div className="text-center">
           <SectionReveal>
             <p className="text-primary mb-3 text-xs font-medium uppercase tracking-[0.3em]">
@@ -50,9 +49,12 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
           </SectionReveal>
         </div>
 
-        {/* Form */}
         <SectionReveal delay={0.2} className="w-full max-w-lg">
-          <RsvpForm eventDate={event.eventDate} prefill={prefill} initialConfirmedName={initialConfirmedName} />
+          <RsvpForm
+            eventDate={event.eventDate}
+            prefill={prefill}
+            initialConfirmedName={initialConfirmedName}
+          />
         </SectionReveal>
       </div>
     </section>
