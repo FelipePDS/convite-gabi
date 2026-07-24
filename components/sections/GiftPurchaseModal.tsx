@@ -1,21 +1,28 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CardPayment, initMercadoPago } from '@mercadopago/sdk-react'
+import { CardPayment, Payment, initMercadoPago } from '@mercadopago/sdk-react'
 import type { ICardPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/cardPayment/type'
+import type { IPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/payment/type'
 import {
+  ArrowLeft,
+  Check,
   CheckCircle2,
+  Copy,
   CreditCard,
   ExternalLink,
   Gift,
   Loader2,
   Link2,
+  QrCode,
   Undo2,
+  Wallet,
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { safeJson } from '@/lib/safe-json'
+import QRCode from 'react-qr-code'
 import type { GiftData } from '@/services/gifts'
 import type { GiftBuyer } from './GiftsGrid'
 
@@ -25,7 +32,9 @@ const formatBRL = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 
 type PaymentStatus = 'PENDING' | 'IN_PROCESS' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'REFUNDED'
-type CheckoutStep = 'form' | 'pending' | 'success'
+type CheckoutStep = 'form' | 'pix' | 'pending' | 'success'
+type CheckoutMethodTab = 'card' | 'pix'
+type CheckoutFlow = 'online' | 'manual'
 type SuccessMode = 'payment' | 'reservation' | 'unreserve'
 
 type CheckoutResponse = {
@@ -111,10 +120,41 @@ function isTerminalFailure(status: PaymentStatus) {
   return status === 'REJECTED' || status === 'CANCELLED' || status === 'REFUNDED'
 }
 
+function isPixPayment(data: CheckoutResponse['payment']) {
+  return (
+    data.paymentMethodId === 'pix' ||
+    data.paymentTypeId === 'bank_transfer' ||
+    Boolean(data.qrCode)
+  )
+}
+
+function buildQrCodeImageSrc(base64: string | null) {
+  if (!base64) return null
+  return base64.startsWith('data:image') ? base64 : `data:image/png;base64,${base64}`
+}
+
 function buildBuyerEmail(buyer: GiftBuyer | null | undefined) {
   const digits = buyer?.phone?.replace(/\D/g, '') || ''
   const identifier = digits || buyer?.invitationCode?.toLowerCase() || 'convidado'
   return `${identifier}@example.com`
+}
+
+function splitBuyerName(name: string) {
+  const trimmed = name.trim()
+
+  if (!trimmed) {
+    return {
+      firstName: '',
+      lastName: '',
+    }
+  }
+
+  const [firstName, ...rest] = trimmed.split(/\s+/)
+
+  return {
+    firstName,
+    lastName: rest.join(' '),
+  }
 }
 
 function getSuccessContent(mode: SuccessMode, giftName: string) {
@@ -148,7 +188,10 @@ export function GiftPurchaseModal({
   onSuccess,
   buyer = null,
 }: GiftPurchaseModalProps) {
+  const [copiedPix, setCopiedPix] = useState(false)
   const [step, setStep] = useState<CheckoutStep>('form')
+  const [paymentTab, setPaymentTab] = useState<CheckoutMethodTab>('card')
+  const [selectedFlow, setSelectedFlow] = useState<CheckoutFlow | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResponse | null>(null)
   const [reserveSubmitting, setReserveSubmitting] = useState(false)
@@ -156,7 +199,10 @@ export function GiftPurchaseModal({
   const hasNotifiedSuccessRef = useRef(false)
 
   const resetState = useCallback(() => {
+    setCopiedPix(false)
     setStep('form')
+    setPaymentTab('card')
+    setSelectedFlow(null)
     setError(null)
     setCheckoutResult(null)
     setReserveSubmitting(false)
@@ -324,7 +370,7 @@ export function GiftPurchaseModal({
       return
     }
 
-    setStep('pending')
+    setStep(isPixPayment(json.payment) ? 'pix' : 'pending')
   }
 
   const handleCardPaymentSubmit = async (
@@ -335,6 +381,28 @@ export function GiftPurchaseModal({
       selectedPaymentMethod: 'creditCard',
       formData: submission,
     })
+  }
+
+  const handlePixPaymentSubmit = async (submission: IPaymentFormData) => {
+    return submitCheckout({
+      paymentType: submission.paymentType,
+      selectedPaymentMethod: submission.selectedPaymentMethod,
+      formData: submission.formData,
+    })
+  }
+
+  const handleCopyPix = async () => {
+    const qrCode = checkoutResult?.payment.qrCode
+
+    if (!qrCode) return
+
+    try {
+      await navigator.clipboard.writeText(qrCode)
+      setCopiedPix(true)
+      window.setTimeout(() => setCopiedPix(false), 2500)
+    } catch {
+      setError('Copie o codigo PIX manualmente.')
+    }
   }
 
   const handleManualReservation = async () => {
@@ -407,9 +475,12 @@ export function GiftPurchaseModal({
 
   const canPurchase = Boolean(buyer?.invitationCode)
   const hasPrice = gift.price != null && gift.price > 0
-  const canPayByCard = canPurchase && hasPrice && Boolean(mercadopagoPublicKey)
+  const canUseOnlineCheckout = canPurchase && hasPrice && Boolean(mercadopagoPublicKey)
   const canUseExternalLink = canPurchase && Boolean(gift.purchaseUrl)
+  const canManageManualFlow = canUseExternalLink || gift.canUndoReservation
   const successContent = getSuccessContent(successMode, gift.name)
+  const qrCodeImageSrc = buildQrCodeImageSrc(checkoutResult?.payment.qrCodeBase64 ?? null)
+  const buyerName = buyer ? splitBuyerName(buyer.name) : null
 
   return (
     <div className="fixed inset-0 z-[1000]">
@@ -442,7 +513,7 @@ export function GiftPurchaseModal({
               </h2>
               <p className="text-muted-foreground mt-2 text-sm">
                 {gift.price != null
-                  ? `Escolha entre pagar com cartao ou abrir o link do presente para comprar por fora.`
+                  ? `Escolha entre pagar com cartao, PIX ou abrir o link do presente para comprar por fora.`
                   : 'Use o link do presente para comprar por fora e depois reserve este item.'}
               </p>
             </div>
@@ -452,7 +523,7 @@ export function GiftPurchaseModal({
                 <div>
                   <p className="text-sm font-medium">Valor do presente</p>
                   <p className="text-muted-foreground text-xs">
-                    Cartao online ou reserva manual pelo link.
+                    Cartao, PIX ou reserva manual pelo link.
                   </p>
                 </div>
                 <span className="font-heading text-primary text-xl font-bold">
@@ -481,6 +552,77 @@ export function GiftPurchaseModal({
                       <p className="text-muted-foreground text-sm">{successContent.description}</p>
                     </div>
                   </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleClose(false)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              ) : step === 'pix' && checkoutResult ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <QrCode className="text-primary h-4 w-4" />
+                    <p className="text-sm font-medium">PIX gerado</p>
+                  </div>
+
+                  <div className="flex flex-col items-center gap-3 rounded-2xl border bg-white px-4 py-5">
+                    {qrCodeImageSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={qrCodeImageSrc}
+                        alt="QR Code do PIX"
+                        className="h-48 w-48 max-w-full rounded-xl object-contain"
+                      />
+                    ) : checkoutResult.payment.qrCode ? (
+                      <QRCode
+                        value={checkoutResult.payment.qrCode}
+                        size={180}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                      />
+                    ) : (
+                      <div className="bg-muted flex h-48 w-48 items-center justify-center rounded-xl">
+                        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                      </div>
+                    )}
+
+                    <Badge variant="secondary">{statusLabel[checkoutResult.payment.status]}</Badge>
+                  </div>
+
+                  {checkoutResult.payment.qrCode && (
+                    <div className="bg-muted rounded-xl px-3 py-3">
+                      <div className="flex items-start gap-2">
+                        <code className="text-foreground min-w-0 flex-1 overflow-hidden whitespace-pre-wrap break-all font-mono text-[11px] leading-5 sm:text-xs">
+                          {checkoutResult.payment.qrCode}
+                        </code>
+                        <button
+                          onClick={handleCopyPix}
+                          className={`shrink-0 rounded p-1 transition-colors ${
+                            copiedPix
+                              ? 'text-green-600'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                          aria-label="Copiar codigo PIX"
+                          type="button"
+                        >
+                          {copiedPix ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-muted-foreground text-center text-sm">
+                    {buildStatusMessage(checkoutResult.payment.status, gift.name)}
+                  </p>
 
                   <Button
                     type="button"
@@ -531,71 +673,217 @@ export function GiftPurchaseModal({
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {canPayByCard && (
-                    <div className="space-y-4 rounded-2xl border px-3 py-4 sm:px-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="text-primary h-4 w-4" />
-                          <p className="text-sm font-medium">Pagar com cartao</p>
-                        </div>
+                  {!selectedFlow && (canUseOnlineCheckout || canManageManualFlow) && (
+                    <div className="space-y-4">
+                      <div className="space-y-1 rounded-2xl border border-dashed px-4 py-4">
+                        <p className="text-sm font-medium">Como voce prefere seguir?</p>
                         <p className="text-muted-foreground text-sm">
-                          O presente sera reservado automaticamente quando o pagamento for aprovado.
+                          Escolha uma das opcoes abaixo. Se quiser garantir o presente agora, use o pagamento online. Se preferir comprar por fora ou pagar localmente, use a reserva manual.
                         </p>
                       </div>
 
-                      <CardPayment
-                        key={`${gift.id}-mercadopago-card`}
-                        initialization={{
-                          amount: gift.price ?? 0,
-                          payer: {
-                            email: buildBuyerEmail(buyer),
-                          },
-                        }}
-                        customization={{
-                          paymentMethods: {
-                            minInstallments: 1,
-                            maxInstallments: 6,
-                            types: {
-                              included: ['credit_card'],
-                            },
-                          },
-                          visual: {
-                            hideFormTitle: true,
-                          },
-                        }}
-                        locale="pt-BR"
-                        onSubmit={handleCardPaymentSubmit}
-                        onReady={() => setError(null)}
-                        onError={(brickError) => {
-                          const message =
-                            brickError.message || 'Erro ao carregar o checkout de cartao.'
-                          setError(message)
-                        }}
-                      />
+                      <div className="grid gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFlow('online')
+                            setError(null)
+                          }}
+                          disabled={!canUseOnlineCheckout}
+                          className="bg-background hover:border-primary/40 flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                            <CreditCard className="h-5 w-5" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold">Presentear agora</p>
+                            <p className="text-muted-foreground text-sm">
+                              Pague com cartao ou PIX. A reserva do presente acontece automaticamente quando o pagamento for confirmado.
+                            </p>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedFlow('manual')
+                            setError(null)
+                          }}
+                          disabled={!canManageManualFlow}
+                          className="bg-background hover:border-primary/40 flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                            <Wallet className="h-5 w-5" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold">Pagar localmente ou comprar por fora</p>
+                            <p className="text-muted-foreground text-sm">
+                              Abra o link do presente, compre fora do site e use a reserva para avisar que esse item ficou com voce.
+                            </p>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                   )}
 
-                  {canUseExternalLink && (
-                    <div className="space-y-4 rounded-2xl border px-4 py-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Link2 className="text-primary h-4 w-4" />
-                          <p className="text-sm font-medium">Comprar por fora ou pagar em dinheiro</p>
+                  {selectedFlow === 'online' && canUseOnlineCheckout && (
+                    <div className="space-y-4 rounded-2xl border px-3 py-4 sm:px-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="text-primary h-4 w-4" />
+                            <p className="text-sm font-medium">Presentear agora</p>
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            Escolha cartao ou PIX. O presente sera reservado automaticamente quando o pagamento for confirmado.
+                          </p>
                         </div>
-                        <p className="text-muted-foreground text-sm">
-                          Abra o link do presente, finalize a compra fora do site e depois registre a reserva aqui.
-                        </p>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0 gap-1"
+                          onClick={() => {
+                            setSelectedFlow(null)
+                            setError(null)
+                          }}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Voltar
+                        </Button>
                       </div>
 
-                      <a
-                        href={gift.purchaseUrl ?? '#'}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-                      >
-                        Abrir link do presente
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
+                      <div className="bg-background inline-flex w-full items-center gap-1 rounded-full border p-1">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentTab('card')}
+                          className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                            paymentTab === 'card'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          Cartao
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentTab('pix')}
+                          className={`inline-flex flex-1 items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                            paymentTab === 'pix'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          PIX
+                        </button>
+                      </div>
+
+                      {paymentTab === 'card' ? (
+                        <CardPayment
+                          key={`${gift.id}-mercadopago-card`}
+                          initialization={{
+                            amount: gift.price ?? 0,
+                            payer: {
+                              email: buildBuyerEmail(buyer),
+                            },
+                          }}
+                          customization={{
+                            paymentMethods: {
+                              minInstallments: 1,
+                              maxInstallments: 6,
+                              types: {
+                                included: ['credit_card'],
+                              },
+                            },
+                            visual: {
+                              hideFormTitle: true,
+                            },
+                          }}
+                          locale="pt-BR"
+                          onSubmit={handleCardPaymentSubmit}
+                          onReady={() => setError(null)}
+                          onError={(brickError) => {
+                            const message =
+                              brickError.message || 'Erro ao carregar o checkout de cartao.'
+                            setError(message)
+                          }}
+                        />
+                      ) : (
+                        <Payment
+                          key={`${gift.id}-mercadopago-pix`}
+                          initialization={{
+                            amount: gift.price ?? 0,
+                            payer: {
+                              firstName: buyerName?.firstName,
+                              lastName: buyerName?.lastName || undefined,
+                            },
+                          }}
+                          customization={{
+                            paymentMethods: {
+                              bankTransfer: 'all',
+                              types: {
+                                included: ['bank_transfer'],
+                              },
+                            },
+                            visual: {
+                              defaultPaymentOption: {
+                                bankTransferForm: true,
+                              },
+                            },
+                          }}
+                          locale="pt-BR"
+                          onSubmit={handlePixPaymentSubmit}
+                          onReady={() => setError(null)}
+                          onError={(brickError) => {
+                            const message =
+                              brickError.message || 'Erro ao carregar o checkout PIX.'
+                            setError(message)
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {selectedFlow === 'manual' && canManageManualFlow && (
+                    <div className="space-y-4 rounded-2xl border px-4 py-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Link2 className="text-primary h-4 w-4" />
+                            <p className="text-sm font-medium">Pagar localmente ou comprar por fora</p>
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            Use esta opcao se voce prefere comprar fora do site e apenas registrar a reserva do presente aqui.
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="shrink-0 gap-1"
+                          onClick={() => {
+                            setSelectedFlow(null)
+                            setError(null)
+                          }}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Voltar
+                        </Button>
+                      </div>
+
+                      {gift.purchaseUrl && (
+                        <a
+                          href={gift.purchaseUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
+                        >
+                          Abrir link do presente
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
 
                       {gift.canUndoReservation ? (
                         <Button
@@ -624,23 +912,23 @@ export function GiftPurchaseModal({
                           ) : (
                             <Gift className="h-4 w-4" />
                           )}
-                          Reservar
+                          Reservar este presente
                         </Button>
                       )}
 
                       <p className="text-muted-foreground text-xs leading-5">
                         {gift.canUndoReservation
-                          ? 'Como a reserva foi feita manualmente por voce, tambem e possivel desfaze-la.'
-                          : 'A reserva manual serve para evitar que outra pessoa escolha o mesmo presente.'}
+                          ? 'Esta reserva foi feita por voce. Se mudar de ideia, pode remove-la por aqui.'
+                          : 'A reserva manual serve para evitar que outra pessoa escolha o mesmo presente antes de voce concluir a compra por fora.'}
                       </p>
                     </div>
                   )}
 
-                  {canPurchase && !canPayByCard && !gift.purchaseUrl && (
+                  {canPurchase && !canUseOnlineCheckout && !gift.purchaseUrl && (
                     <div className="bg-muted/60 space-y-1 rounded-2xl px-4 py-3">
                       <p className="text-sm font-medium">Presente sem opcao configurada</p>
                       <p className="text-muted-foreground text-sm">
-                        Configure um preco para pagamento com cartao ou cadastre um link do presente no admin.
+                        Configure um preco para pagamento com cartao ou PIX, ou cadastre um link do presente no admin.
                       </p>
                     </div>
                   )}
