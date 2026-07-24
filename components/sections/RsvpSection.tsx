@@ -10,6 +10,7 @@ interface RsvpSectionProps {
     name?: string
     phone?: string
     invitationCode: string
+    companionNames?: string[]
   }
   initialConfirmedName?: string
 }

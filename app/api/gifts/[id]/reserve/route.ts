@@ -170,46 +170,28 @@ export async function DELETE(
         throw err
       }
 
-      const latestReservation = await tx.giftPurchase.findFirst({
+      const activeManualReservation = await tx.giftPurchase.findFirst({
         where: {
           giftId: id,
+          guestId: guest.id,
+          invitationCode: guest.invitationCode ?? invitationCode,
+          provider: 'manual_reservation',
+          status: 'APPROVED',
         },
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
-          guestId: true,
-          invitationCode: true,
-          status: true,
-          provider: true,
         },
       })
 
-      if (!latestReservation || gift.status !== 'RESERVED') {
+      if (!activeManualReservation || gift.status !== 'RESERVED') {
         const err = new Error('NOT_RESERVED')
         err.name = 'NOT_RESERVED'
         throw err
       }
 
-      if (
-        latestReservation.guestId !== guest.id ||
-        latestReservation.invitationCode !== (guest.invitationCode ?? invitationCode)
-      ) {
-        const err = new Error('NOT_OWNER')
-        err.name = 'NOT_OWNER'
-        throw err
-      }
-
-      if (
-        latestReservation.provider !== 'manual_reservation' ||
-        latestReservation.status !== 'APPROVED'
-      ) {
-        const err = new Error('NOT_MANUAL')
-        err.name = 'NOT_MANUAL'
-        throw err
-      }
-
       await tx.giftPurchase.update({
-        where: { id: latestReservation.id },
+        where: { id: activeManualReservation.id },
         data: {
           status: 'CANCELLED',
           statusDetail: 'reservation_removed',
@@ -238,20 +220,6 @@ export async function DELETE(
 
       if (error.name === 'NOT_RESERVED') {
         return NextResponse.json({ error: 'Este presente nao esta reservado.' }, { status: 409 })
-      }
-
-      if (error.name === 'NOT_OWNER') {
-        return NextResponse.json(
-          { error: 'Apenas quem fez a reserva pode remove-la.' },
-          { status: 403 }
-        )
-      }
-
-      if (error.name === 'NOT_MANUAL') {
-        return NextResponse.json(
-          { error: 'Esta reserva veio de um pagamento confirmado e nao pode ser removida aqui.' },
-          { status: 409 }
-        )
       }
     }
 

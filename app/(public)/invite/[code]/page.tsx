@@ -9,7 +9,6 @@ import { GallerySection } from '@/components/sections/GallerySection'
 import { EventInfoSection } from '@/components/sections/EventInfoSection'
 import { RsvpSection } from '@/components/sections/RsvpSection'
 import { GiftsSection } from '@/components/sections/GiftsSection'
-import { PixSection } from '@/components/sections/PixSection'
 
 interface Props {
   params: Promise<{ code: string }>
@@ -86,6 +85,7 @@ export default async function InvitePage({ params }: Props) {
           name: guest.name,
           phone: guest.phone ?? undefined,
           invitationCode: guest.invitationCode,
+          companionNames: guest.companionNames,
         }}
         initialConfirmedName={alreadyConfirmed ? guest.name : undefined}
       />

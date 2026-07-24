@@ -1,17 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { forwardRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { forwardRef, useState } from 'react'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Loader2, Plus, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RsvpSuccess } from './RsvpSuccess'
 import { rsvpSchema, type RsvpFormData } from '@/lib/validations/rsvp'
 import { cn } from '@/lib/utils'
-
-// ── Elegant input primitives ────────────────────────────────────────────────
 
 const inputBase =
   'w-full border-0 border-b-2 border-border bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors duration-200 focus:border-primary aria-invalid:border-destructive'
@@ -49,7 +46,10 @@ function Field({
 }) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+      >
         {label}
       </label>
       {children}
@@ -58,25 +58,35 @@ function Field({
   )
 }
 
-// ── Component ───────────────────────────────────────────────────────────────
-
 interface RsvpFormProps {
   eventDate: string
-  /** Pre-filled values from a personalised invite link */
   prefill?: {
     name?: string
     phone?: string
     invitationCode: string
+    companionNames?: string[]
   }
-  /** Guest already confirmed — start directly in the success view */
   initialConfirmedName?: string
+}
+
+type RsvpResponse = {
+  success: boolean
+  name: string
+  companionNames?: string[]
 }
 
 export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormProps) {
   const [confirmedName, setConfirmedName] = useState<string | null>(initialConfirmedName ?? null)
+  const [confirmedCompanions, setConfirmedCompanions] = useState<string[]>(
+    prefill?.companionNames ?? []
+  )
+  const [showSuccess, setShowSuccess] = useState(Boolean(initialConfirmedName))
+
+  const allowCompanionManagement = Boolean(prefill?.invitationCode)
 
   const {
     register,
+    control,
     handleSubmit,
     setError,
     reset,
@@ -86,9 +96,14 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     defaultValues: {
       name: prefill?.name ?? '',
       phone: prefill?.phone ?? '',
-      guestCount: 1,
+      companionNames: (prefill?.companionNames ?? []).map((name) => ({ name })),
       invitationCode: prefill?.invitationCode,
     },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'companionNames',
   })
 
   const onSubmit = async (data: RsvpFormData) => {
@@ -98,12 +113,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
       body: JSON.stringify(data),
     })
 
-    const json = await res.json()
-
-    if (res.status === 409) {
-      setError('root', { message: json.error ?? 'Este convite já foi confirmado.' })
-      return
-    }
+    const json = (await res.json()) as RsvpResponse & { error?: string }
 
     if (!res.ok) {
       setError('root', { message: json.error ?? 'Erro ao confirmar. Tente novamente.' })
@@ -111,19 +121,36 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     }
 
     setConfirmedName(json.name ?? data.name)
+    setConfirmedCompanions(json.companionNames ?? data.companionNames.map((companion) => companion.name))
+    setShowSuccess(true)
   }
 
-  if (confirmedName) {
+  if (showSuccess && confirmedName) {
     return (
       <RsvpSuccess
         guestName={confirmedName}
         eventDate={eventDate}
+        companions={confirmedCompanions}
+        onEdit={
+          allowCompanionManagement
+            ? () => {
+                setShowSuccess(false)
+              }
+            : undefined
+        }
         onReset={
           prefill
-            ? undefined // personalised link → no "confirm another" button
+            ? undefined
             : () => {
                 setConfirmedName(null)
-                reset()
+                setConfirmedCompanions([])
+                setShowSuccess(false)
+                reset({
+                  name: '',
+                  phone: '',
+                  companionNames: [],
+                  invitationCode: undefined,
+                })
               }
         }
       />
@@ -142,12 +169,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
         noValidate
         className="w-full max-w-lg space-y-6"
       >
-        {/* Name */}
-        <Field
-          id="rsvp-name"
-          label="Nome completo"
-          error={errors.name?.message}
-        >
+        <Field id="rsvp-name" label="Nome completo" error={errors.name?.message}>
           <ElegantInput
             id="rsvp-name"
             placeholder="Seu nome"
@@ -157,12 +179,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           />
         </Field>
 
-        {/* Phone */}
-        <Field
-          id="rsvp-phone"
-          label="WhatsApp / Telefone"
-          error={errors.phone?.message}
-        >
+        <Field id="rsvp-phone" label="WhatsApp / Telefone" error={errors.phone?.message}>
           <ElegantInput
             id="rsvp-phone"
             type="tel"
@@ -173,31 +190,84 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           />
         </Field>
 
-        {/* Guest count */}
-        {/* <Field
-          id="rsvp-guests"
-          label="Número de acompanhantes"
-          error={errors.guestCount?.message}
-        >
-          <ElegantInput
-            id="rsvp-guests"
-            type="number"
-            min={1}
-            max={20}
-            aria-invalid={!!errors.guestCount}
-            {...register('guestCount', { valueAsNumber: true })}
-          />
-        </Field> */}
+        {allowCompanionManagement && (
+          <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Users className="text-primary h-4 w-4" />
+                  <p className="text-sm font-semibold">Acompanhantes</p>
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Adicione apenas o nome de cada acompanhante. Voce pode incluir mais pessoas ou remover depois, mesmo apos confirmar.
+                </p>
+              </div>
 
-        {/* Message */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-2"
+                onClick={() => append({ name: '' })}
+                disabled={fields.length >= 19}
+              >
+                <Plus className="h-4 w-4" />
+                Adicionar
+              </Button>
+            </div>
+
+            {fields.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                Nenhum acompanhante adicionado ainda.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="rounded-xl border px-3 py-3">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium">Acompanhante {index + 1}</p>
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-muted-foreground hover:text-destructive rounded-full p-1 transition-colors"
+                        aria-label={`Remover acompanhante ${index + 1}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <ElegantInput
+                      placeholder="Nome do acompanhante"
+                      aria-invalid={!!errors.companionNames?.[index]?.name}
+                      {...register(`companionNames.${index}.name`)}
+                    />
+                    {errors.companionNames?.[index]?.name && (
+                      <p className="text-destructive pt-2 text-xs">
+                        {errors.companionNames[index]?.name?.message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {typeof errors.companionNames?.message === 'string' && (
+              <p className="text-destructive text-xs">{errors.companionNames.message}</p>
+            )}
+          </div>
+        )}
+
         <Field
           id="rsvp-message"
-          label={<>Mensagem <span className="text-muted-foreground font-normal text-xs">(opcional)</span></>}
+          label={
+            <>
+              Mensagem <span className="text-muted-foreground text-xs font-normal">(opcional)</span>
+            </>
+          }
           error={errors.message?.message}
         >
           <ElegantTextarea
             id="rsvp-message"
-            placeholder="Deixe uma mensagem carinhosa…"
+            placeholder="Deixe uma mensagem carinhosa..."
             rows={3}
             maxLength={500}
             aria-invalid={!!errors.message}
@@ -205,24 +275,24 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           />
         </Field>
 
-        {/* Server / root error */}
         {errors.root && (
           <p role="alert" className="bg-destructive/10 text-destructive rounded-xl px-4 py-2 text-sm">
             {errors.root.message}
           </p>
         )}
 
-        {/* Hidden invitation code */}
         <input type="hidden" {...register('invitationCode')} />
 
         <Button type="submit" className="w-full rounded-full" disabled={isSubmitting} size="lg">
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Confirmando…
+              Salvando confirmacao...
             </>
+          ) : confirmedName ? (
+            'Atualizar confirmacao'
           ) : (
-            'Confirmar presença ✦'
+            'Confirmar presenca'
           )}
         </Button>
       </motion.form>

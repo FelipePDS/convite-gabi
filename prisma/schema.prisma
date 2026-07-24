@@ -47,11 +47,16 @@ model Guest {
   message        String?     @db.Text
   status         GuestStatus @default(PENDING)
   invitationCode String?     @unique
+  primaryGuestId String?
   viewedAt       DateTime?
   confirmedAt    DateTime?
   giftPurchases  GiftPurchase[]
+  primaryGuest   Guest?      @relation("GuestCompanions", fields: [primaryGuestId], references: [id], onDelete: Cascade)
+  companions     Guest[]     @relation("GuestCompanions")
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+
+  @@index([primaryGuestId, createdAt])
 }
 
 // ─────────────────────────────────────────────

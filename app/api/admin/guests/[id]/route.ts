@@ -22,23 +22,18 @@ export async function DELETE(
   const { id } = await params
 
   try {
-    const guest = await prisma.guest.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        giftPurchases: {
-          select: {
-            giftId: true,
-          },
-        },
-      },
-    })
+    const guest = await prisma.guest.findUnique({ where: { id } })
 
     if (!guest) {
-      return NextResponse.json({ error: 'Convidado não encontrado' }, { status: 404 })
+      return NextResponse.json({ error: 'Convidado nao encontrado' }, { status: 404 })
     }
 
-    const giftIds = [...new Set(guest.giftPurchases.map((purchase) => purchase.giftId))]
+    const giftPurchases = await prisma.giftPurchase.findMany({
+      where: { guestId: id },
+      select: { giftId: true },
+    })
+
+    const giftIds = [...new Set(giftPurchases.map((purchase) => purchase.giftId))]
 
     await prisma.$transaction(async (tx) => {
       await tx.giftPurchase.deleteMany({
@@ -72,6 +67,19 @@ export async function DELETE(
       await tx.guest.delete({
         where: { id },
       })
+
+      if (guest.primaryGuestId) {
+        const remainingCompanions = await tx.guest.count({
+          where: { primaryGuestId: guest.primaryGuestId },
+        })
+
+        await tx.guest.update({
+          where: { id: guest.primaryGuestId },
+          data: {
+            guestCount: remainingCompanions + 1,
+          },
+        })
+      }
     })
 
     return NextResponse.json({ success: true })

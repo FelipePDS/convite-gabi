@@ -103,6 +103,7 @@ export const GuestScalarFieldEnum = {
   message: 'message',
   status: 'status',
   invitationCode: 'invitationCode',
+  primaryGuestId: 'primaryGuestId',
   viewedAt: 'viewedAt',
   confirmedAt: 'confirmedAt',
   createdAt: 'createdAt',

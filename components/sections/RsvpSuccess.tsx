@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Heart, PartyPopper } from 'lucide-react'
+import { CheckCircle2, Heart, PartyPopper, Users } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 
@@ -35,10 +35,18 @@ function launchConfetti() {
 interface RsvpSuccessProps {
   guestName: string
   eventDate: string
+  companions?: string[]
   onReset?: () => void
+  onEdit?: () => void
 }
 
-export function RsvpSuccess({ guestName, eventDate, onReset }: RsvpSuccessProps) {
+export function RsvpSuccess({
+  guestName,
+  eventDate,
+  companions = [],
+  onReset,
+  onEdit,
+}: RsvpSuccessProps) {
   useEffect(() => {
     launchConfetti()
   }, [])
@@ -57,7 +65,6 @@ export function RsvpSuccess({ guestName, eventDate, onReset }: RsvpSuccessProps)
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
       className="bg-card border-border flex w-full max-w-md flex-col items-center gap-6 rounded-3xl border p-10 text-center shadow-xl"
     >
-      {/* Icon */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -67,28 +74,60 @@ export function RsvpSuccess({ guestName, eventDate, onReset }: RsvpSuccessProps)
         <CheckCircle2 className="h-8 w-8" />
       </motion.div>
 
-      {/* Text */}
       <div className="space-y-2">
-        <h3 className="font-heading text-2xl font-bold">Presença confirmada!</h3>
+        <h3 className="font-heading text-2xl font-bold">Presenca confirmada!</h3>
         <p className="text-muted-foreground">
-          Que alegria, <span className="text-foreground font-semibold">{guestName}</span>! <br />
+          Que alegria, <span className="text-foreground font-semibold">{guestName}</span>!
+          <br />
           Te esperamos no dia{' '}
           <span className="text-foreground font-semibold">{formattedDate}</span>.
         </p>
       </div>
 
-      {/* Decorative */}
       <div className="text-primary flex items-center gap-2 text-sm font-medium">
         <PartyPopper className="h-4 w-4" />
-        <span>Vai ser incrível! 🎉</span>
+        <span>Vai ser incrivel!</span>
         <Heart className="h-4 w-4 fill-current" />
       </div>
 
-      {onReset && (
-        <Button variant="outline" size="sm" onClick={onReset} className="mt-2">
-          Confirmar outro convidado
-        </Button>
-      )}
+      <div className="bg-muted/60 w-full rounded-2xl px-4 py-3 text-left">
+        <div className="mb-2 flex items-center gap-2">
+          <Users className="text-primary h-4 w-4" />
+          <p className="text-sm font-semibold">Acompanhantes</p>
+        </div>
+        {companions.length > 0 ? (
+          <div className="space-y-1">
+            <p className="text-muted-foreground text-sm">
+              {companions.length} acompanhante(s) confirmado(s) com voce:
+            </p>
+            <ul className="space-y-1 text-sm">
+              {companions.map((companion) => (
+                <li key={companion} className="text-foreground">
+                  {companion}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Nenhum acompanhante adicionado por enquanto.
+          </p>
+        )}
+      </div>
+
+      <div className="flex w-full flex-col gap-2">
+        {onEdit && (
+          <Button variant="outline" onClick={onEdit}>
+            Gerenciar acompanhantes
+          </Button>
+        )}
+
+        {onReset && (
+          <Button variant="outline" size="sm" onClick={onReset}>
+            Confirmar outro convidado
+          </Button>
+        )}
+      </div>
     </motion.div>
   )
 }
