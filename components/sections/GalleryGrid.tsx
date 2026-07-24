@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Image from 'next/image'
 import { ImageIcon, Images, Play } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -20,14 +19,6 @@ const PREVIEW_LIMIT = 6
 
 interface GalleryGridProps {
   items: GalleryItemData[]
-}
-
-function getTileHeightClass(compact: boolean) {
-  if (compact) {
-    return 'h-[210px] sm:h-[240px] lg:h-[280px]'
-  }
-
-  return 'h-[280px] sm:h-[340px] lg:h-[400px]'
 }
 
 function GalleryTile({
@@ -51,23 +42,29 @@ function GalleryTile({
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.45, delay: (index % 6) * 0.04 }}
       onClick={onClick}
-      className="group block w-full overflow-hidden rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      className="group mb-3 block w-full break-inside-avoid overflow-hidden rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       aria-label={item.caption ?? `Abrir item ${index + 1} da galeria`}
     >
-      <div className="relative overflow-hidden rounded-2xl">
-        <div className={`relative w-full ${getTileHeightClass(compact)}`}>
-          <Image
+      <div className="relative overflow-hidden rounded-2xl bg-white/5">
+        {item.type === 'VIDEO' ? (
+          <div className={`relative w-full ${compact ? 'aspect-[4/5]' : 'aspect-[3/4]'}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumb}
+              alt={item.caption ?? `Galeria item ${index + 1}`}
+              className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              draggable={false}
+            />
+          </div>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={thumb}
             alt={item.caption ?? `Galeria item ${index + 1}`}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes={
-              compact
-                ? '(max-width: 640px) 44vw, (max-width: 1024px) 30vw, 220px'
-                : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px'
-            }
+            className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+            draggable={false}
           />
-        </div>
+        )}
 
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-300 group-hover:bg-black/25">
           {item.type === 'VIDEO' && (
@@ -105,7 +102,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4">
+      <div className="columns-2 gap-3 sm:columns-3 lg:gap-4">
         {previewItems.map((item, index) => (
           <GalleryTile
             key={item.id}
@@ -142,7 +139,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
             </DialogHeader>
 
             <div className="overflow-y-auto px-4 py-4 sm:px-5">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="columns-1 gap-3 sm:columns-2 lg:columns-3">
                 {items.map((item, index) => (
                   <GalleryTile
                     key={`${item.id}-modal`}
