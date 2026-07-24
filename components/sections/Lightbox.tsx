@@ -72,7 +72,7 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex h-dvh flex-col bg-black/95 backdrop-blur-sm"
         onClick={onClose}
         role="dialog"
         aria-modal="true"
@@ -100,7 +100,7 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
         </div>
 
         <div
-          className="relative flex flex-1 items-center justify-center overflow-hidden px-12"
+          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-3 py-2 sm:px-12 sm:py-4"
           onClick={(event) => event.stopPropagation()}
         >
           {index > 0 && (
@@ -126,11 +126,11 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.1}
               onDragEnd={handleDragEnd}
-              className="flex h-full w-full items-center justify-center"
+              className="flex h-full min-h-0 w-full items-center justify-center"
             >
               {videoId ? (
-                <div className="w-full max-w-4xl">
-                  <div className="relative pt-[56.25%]">
+                <div className="flex h-full w-full max-w-5xl items-center">
+                  <div className="relative aspect-video w-full max-h-full">
                     <iframe
                       key={videoId}
                       className="absolute inset-0 h-full w-full rounded-xl"
@@ -142,7 +142,7 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
                   </div>
                 </div>
               ) : (
-                <div className="relative h-full w-full">
+                <div className="relative h-full w-full min-h-0">
                   <Image
                     src={current.url}
                     alt={current.caption ?? `Imagem ${index + 1}`}

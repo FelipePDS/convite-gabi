@@ -47,13 +47,17 @@ function GalleryTile({
       aria-label={item.caption ?? `Abrir item ${index + 1} da galeria`}
     >
       <div className="relative overflow-hidden rounded-2xl">
-        <div className={`relative w-full ${compact ? 'aspect-square' : 'aspect-[4/5]'}`}>
+        <div className={`relative w-full ${compact ? 'aspect-square' : 'aspect-[3/4]'}`}>
           <Image
             src={thumb}
             alt={item.caption ?? `Galeria item ${index + 1}`}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes={compact ? '(max-width: 640px) 44vw, 160px' : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'}
+            sizes={
+              compact
+                ? '(max-width: 640px) 44vw, 160px'
+                : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'
+            }
           />
         </div>
 
