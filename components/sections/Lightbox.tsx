@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Image from 'next/image'
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { extractYouTubeId } from '@/lib/youtube'
@@ -142,14 +141,12 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
                   </div>
                 </div>
               ) : (
-                <div className="relative h-full w-full min-h-0">
-                  <Image
+                <div className="flex h-full w-full min-h-0 items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={current.url}
                     alt={current.caption ?? `Imagem ${index + 1}`}
-                    fill
-                    className="object-contain"
-                    sizes="100vw"
-                    priority
+                    className="block h-full w-auto max-h-full max-w-full rounded-xl object-contain"
                     draggable={false}
                   />
                 </div>
