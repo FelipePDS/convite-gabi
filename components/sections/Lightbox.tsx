@@ -99,7 +99,7 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
         </div>
 
         <div
-          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-3 py-2 sm:px-12 sm:py-4"
+          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-2 py-1 sm:px-10 sm:py-2"
           onClick={(event) => event.stopPropagation()}
         >
           {index > 0 && (
@@ -146,7 +146,7 @@ export function Lightbox({ items, initialIndex, onClose }: LightboxProps) {
                   <img
                     src={current.url}
                     alt={current.caption ?? `Imagem ${index + 1}`}
-                    className="block h-full w-auto max-h-full max-w-full rounded-xl object-contain"
+                    className="block h-[calc(100dvh-7.5rem)] w-auto max-h-[calc(100dvh-7.5rem)] max-w-[calc(100vw-1rem)] rounded-xl object-contain sm:h-[calc(100dvh-8.5rem)] sm:max-h-[calc(100dvh-8.5rem)] sm:max-w-[calc(100vw-6rem)]"
                     draggable={false}
                   />
                 </div>
