@@ -23,6 +23,7 @@ export function GiftCard({
   onOpen,
 }: GiftCardProps) {
   const isReserved = gift.status === 'RESERVED'
+  const canUndoReservation = gift.canUndoReservation
   const isList = viewMode === 'list'
 
   return (
@@ -94,27 +95,31 @@ export function GiftCard({
 
           <Button
             size="sm"
-            variant={disabled || isReserved ? 'secondary' : 'default'}
-            disabled={disabled || isReserved}
+            variant={disabled ? 'secondary' : canUndoReservation ? 'outline' : 'default'}
+            disabled={disabled}
             onClick={() => onOpen(gift)}
             className={isList ? 'shrink-0' : 'w-full'}
             aria-label={
-              isReserved
-                ? `${gift.name} ja foi reservado`
-                : disabled
-                  ? gift.price == null
-                    ? `${gift.name} ainda nao possui valor configurado`
-                    : `Use seu link de convite para comprar ${gift.name}`
-                  : `Abrir checkout para ${gift.name}`
+              canUndoReservation
+                ? `Gerenciar reserva de ${gift.name}`
+                : isReserved
+                  ? `${gift.name} ja foi reservado`
+                  : disabled
+                    ? gift.price == null && !gift.purchaseUrl
+                      ? `${gift.name} ainda nao possui valor nem link configurados`
+                      : `Use seu link de convite para comprar ${gift.name}`
+                    : `Abrir opcoes de presente para ${gift.name}`
             }
           >
-            {isReserved
-              ? 'Reservado'
-              : disabled
-                ? gift.price == null
-                  ? 'Preco pendente'
-                  : 'Use seu link de convite'
-                : 'Presentear'}
+            {canUndoReservation
+              ? 'Tirar reserva'
+              : isReserved
+                ? 'Reservado'
+                : disabled
+                  ? gift.price == null && !gift.purchaseUrl
+                    ? 'Indisponivel'
+                    : 'Use seu link de convite'
+                  : 'Presentear'}
           </Button>
         </div>
       </div>

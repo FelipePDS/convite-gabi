@@ -39,6 +39,7 @@ export type GiftMinAggregateOutputType = {
   name: string | null
   description: string | null
   imageUrl: string | null
+  purchaseUrl: string | null
   price: number | null
   status: $Enums.GiftStatus | null
   reservedByName: string | null
@@ -53,6 +54,7 @@ export type GiftMaxAggregateOutputType = {
   name: string | null
   description: string | null
   imageUrl: string | null
+  purchaseUrl: string | null
   price: number | null
   status: $Enums.GiftStatus | null
   reservedByName: string | null
@@ -67,6 +69,7 @@ export type GiftCountAggregateOutputType = {
   name: number
   description: number
   imageUrl: number
+  purchaseUrl: number
   price: number
   status: number
   reservedByName: number
@@ -91,6 +94,7 @@ export type GiftMinAggregateInputType = {
   name?: true
   description?: true
   imageUrl?: true
+  purchaseUrl?: true
   price?: true
   status?: true
   reservedByName?: true
@@ -105,6 +109,7 @@ export type GiftMaxAggregateInputType = {
   name?: true
   description?: true
   imageUrl?: true
+  purchaseUrl?: true
   price?: true
   status?: true
   reservedByName?: true
@@ -119,6 +124,7 @@ export type GiftCountAggregateInputType = {
   name?: true
   description?: true
   imageUrl?: true
+  purchaseUrl?: true
   price?: true
   status?: true
   reservedByName?: true
@@ -220,6 +226,7 @@ export type GiftGroupByOutputType = {
   name: string
   description: string | null
   imageUrl: string | null
+  purchaseUrl: string | null
   price: number | null
   status: $Enums.GiftStatus
   reservedByName: string | null
@@ -257,6 +264,7 @@ export type GiftWhereInput = {
   name?: Prisma.StringFilter<"Gift"> | string
   description?: Prisma.StringNullableFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
+  purchaseUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
   price?: Prisma.FloatNullableFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableFilter<"Gift"> | string | null
@@ -272,6 +280,7 @@ export type GiftOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchaseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -290,6 +299,7 @@ export type GiftWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Gift"> | string
   description?: Prisma.StringNullableFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
+  purchaseUrl?: Prisma.StringNullableFilter<"Gift"> | string | null
   price?: Prisma.FloatNullableFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableFilter<"Gift"> | string | null
@@ -305,6 +315,7 @@ export type GiftOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  purchaseUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -327,6 +338,7 @@ export type GiftScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Gift"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
+  purchaseUrl?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
   price?: Prisma.FloatNullableWithAggregatesFilter<"Gift"> | number | null
   status?: Prisma.EnumGiftStatusWithAggregatesFilter<"Gift"> | $Enums.GiftStatus
   reservedByName?: Prisma.StringNullableWithAggregatesFilter<"Gift"> | string | null
@@ -341,6 +353,7 @@ export type GiftCreateInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
+  purchaseUrl?: string | null
   price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
@@ -356,6 +369,7 @@ export type GiftUncheckedCreateInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
+  purchaseUrl?: string | null
   price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
@@ -371,6 +385,7 @@ export type GiftUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -386,6 +401,7 @@ export type GiftUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -401,6 +417,7 @@ export type GiftCreateManyInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
+  purchaseUrl?: string | null
   price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
@@ -415,6 +432,7 @@ export type GiftUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -429,6 +447,7 @@ export type GiftUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -443,6 +462,7 @@ export type GiftCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  purchaseUrl?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
@@ -461,6 +481,7 @@ export type GiftMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  purchaseUrl?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
@@ -475,6 +496,7 @@ export type GiftMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  purchaseUrl?: Prisma.SortOrder
   price?: Prisma.SortOrder
   status?: Prisma.SortOrder
   reservedByName?: Prisma.SortOrder
@@ -524,6 +546,7 @@ export type GiftCreateWithoutPurchasesInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
+  purchaseUrl?: string | null
   price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
@@ -538,6 +561,7 @@ export type GiftUncheckedCreateWithoutPurchasesInput = {
   name: string
   description?: string | null
   imageUrl?: string | null
+  purchaseUrl?: string | null
   price?: number | null
   status?: $Enums.GiftStatus
   reservedByName?: string | null
@@ -568,6 +592,7 @@ export type GiftUpdateWithoutPurchasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -582,6 +607,7 @@ export type GiftUncheckedUpdateWithoutPurchasesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  purchaseUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumGiftStatusFieldUpdateOperationsInput | $Enums.GiftStatus
   reservedByName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -627,6 +653,7 @@ export type GiftSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   description?: boolean
   imageUrl?: boolean
+  purchaseUrl?: boolean
   price?: boolean
   status?: boolean
   reservedByName?: boolean
@@ -643,6 +670,7 @@ export type GiftSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   description?: boolean
   imageUrl?: boolean
+  purchaseUrl?: boolean
   price?: boolean
   status?: boolean
   reservedByName?: boolean
@@ -657,6 +685,7 @@ export type GiftSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   description?: boolean
   imageUrl?: boolean
+  purchaseUrl?: boolean
   price?: boolean
   status?: boolean
   reservedByName?: boolean
@@ -671,6 +700,7 @@ export type GiftSelectScalar = {
   name?: boolean
   description?: boolean
   imageUrl?: boolean
+  purchaseUrl?: boolean
   price?: boolean
   status?: boolean
   reservedByName?: boolean
@@ -680,7 +710,7 @@ export type GiftSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GiftOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "imageUrl" | "price" | "status" | "reservedByName" | "reservedByPhone" | "reservedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["gift"]>
+export type GiftOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "imageUrl" | "purchaseUrl" | "price" | "status" | "reservedByName" | "reservedByPhone" | "reservedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["gift"]>
 export type GiftInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   purchases?: boolean | Prisma.Gift$purchasesArgs<ExtArgs>
   _count?: boolean | Prisma.GiftCountOutputTypeDefaultArgs<ExtArgs>
@@ -698,6 +728,7 @@ export type $GiftPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string
     description: string | null
     imageUrl: string | null
+    purchaseUrl: string | null
     price: number | null
     status: $Enums.GiftStatus
     reservedByName: string | null
@@ -1133,6 +1164,7 @@ export interface GiftFieldRefs {
   readonly name: Prisma.FieldRef<"Gift", 'String'>
   readonly description: Prisma.FieldRef<"Gift", 'String'>
   readonly imageUrl: Prisma.FieldRef<"Gift", 'String'>
+  readonly purchaseUrl: Prisma.FieldRef<"Gift", 'String'>
   readonly price: Prisma.FieldRef<"Gift", 'Float'>
   readonly status: Prisma.FieldRef<"Gift", 'GiftStatus'>
   readonly reservedByName: Prisma.FieldRef<"Gift", 'String'>

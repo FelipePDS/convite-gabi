@@ -76,6 +76,7 @@ model Gift {
   name             String
   description      String?    @db.Text
   imageUrl         String?
+  purchaseUrl      String?
   price            Float?
   status           GiftStatus @default(AVAILABLE)
   reservedByName   String?

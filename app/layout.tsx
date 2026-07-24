@@ -18,8 +18,10 @@ const playfair = Playfair_Display({
 })
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-const DEFAULT_TITLE = 'Convite — Aniversário da Gabi'
-const DEFAULT_DESCRIPTION = 'Você está convidado para uma celebração especial! Confirme sua presença.'
+const DEFAULT_TITLE = 'Convite - Aniversario da Gabi'
+const DEFAULT_DESCRIPTION =
+  'Voce esta convidado para uma celebracao especial! Confirme sua presenca.'
+const SHARE_IMAGE = '/images/capa.jpeg'
 
 export const viewport: Viewport = {
   themeColor: [
@@ -33,7 +35,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: {
     default: DEFAULT_TITLE,
-    template: '%s | Aniversário da Gabi',
+    template: '%s | Aniversario da Gabi',
   },
   description: DEFAULT_DESCRIPTION,
   metadataBase: new URL(BASE_URL),
@@ -41,14 +43,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: BASE_URL,
-    siteName: 'Aniversário da Gabi',
+    siteName: 'Aniversario da Gabi',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
+    images: [
+      {
+        url: SHARE_IMAGE,
+        alt: 'Gabriela, 15 Anos',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
+    images: [SHARE_IMAGE],
   },
   robots: {
     index: true,
@@ -91,4 +100,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
-

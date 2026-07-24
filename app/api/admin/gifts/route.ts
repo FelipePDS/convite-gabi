@@ -8,6 +8,7 @@ const schema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
+  purchaseUrl: z.string().url().optional().or(z.literal('')),
   price: z.coerce.number().min(0).optional(),
 })
 
@@ -34,13 +35,14 @@ export async function POST(req: Request) {
   const parsed = schema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid' }, { status: 422 })
 
-  const { name, description, imageUrl, price } = parsed.data
+  const { name, description, imageUrl, purchaseUrl, price } = parsed.data
   try {
     const gift = await prisma.gift.create({
       data: {
         name,
         description: description || null,
         imageUrl: imageUrl || null,
+        purchaseUrl: purchaseUrl || null,
         price: price ?? null,
         status: 'AVAILABLE',
       },

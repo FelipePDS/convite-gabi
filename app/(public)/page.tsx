@@ -9,13 +9,14 @@ import { EventInfoSection } from '@/components/sections/EventInfoSection'
 import { InviteLockedSection } from '@/components/sections/InviteLockedSection'
 import { GiftsSection } from '@/components/sections/GiftsSection'
 import { GiftsSkeleton } from '@/components/sections/GiftsSkeleton'
-import { PixSection } from '@/components/sections/PixSection'
+
+const SHARE_IMAGE = '/images/capa.jpeg'
 
 export async function generateMetadata(): Promise<Metadata> {
   const event = await getEventSettings()
   const description =
     event.description?.split('\n')[0]?.slice(0, 160) ??
-    'Você está convidado para uma celebração especial! Confirme sua presença.'
+    'Voce esta convidado para uma celebracao especial! Confirme sua presenca.'
 
   return {
     title: event.title,
@@ -23,10 +24,17 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: event.title,
       description,
+      images: [
+        {
+          url: SHARE_IMAGE,
+          alt: 'Gabriela, 15 Anos',
+        },
+      ],
     },
     twitter: {
       title: event.title,
       description,
+      images: [SHARE_IMAGE],
     },
   }
 }
@@ -50,4 +58,3 @@ export default async function HomePage() {
     </>
   )
 }
-

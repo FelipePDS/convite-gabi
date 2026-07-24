@@ -7,7 +7,7 @@ interface GiftsSectionProps {
 }
 
 export async function GiftsSection({ buyer = null }: GiftsSectionProps = {}) {
-  const gifts = await getGifts()
+  const gifts = await getGifts(buyer?.invitationCode)
 
   return (
     <section

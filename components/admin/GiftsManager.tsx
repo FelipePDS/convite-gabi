@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Eye, Gift as GiftIcon, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Eye, ExternalLink, Gift as GiftIcon, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,6 +43,7 @@ type Gift = {
   name: string
   description: string | null
   imageUrl: string | null
+  purchaseUrl: string | null
   price: number | null
   status: 'AVAILABLE' | 'RESERVED'
   reservedByName: string | null
@@ -57,6 +58,7 @@ const schema = z.object({
   name: z.string().min(1, 'Nome obrigatorio').max(100),
   description: z.string().max(500).optional(),
   imageUrl: z.string().url('URL invalida').optional().or(z.literal('')),
+  purchaseUrl: z.string().url('URL invalida').optional().or(z.literal('')),
   price: z.preprocess(
     (value) => {
       if (value === '' || value == null) return undefined
@@ -95,6 +97,7 @@ function normalizeGift(payload: Partial<Gift> & {
     name: payload.name,
     description: payload.description ?? null,
     imageUrl: payload.imageUrl ?? null,
+    purchaseUrl: payload.purchaseUrl ?? null,
     price: payload.price ?? null,
     status: payload.status ?? 'AVAILABLE',
     reservedByName: payload.reservedByName ?? null,
@@ -160,7 +163,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
 
   const openCreate = () => {
     setEditing(null)
-    reset({ name: '', description: '', imageUrl: '', price: undefined })
+    reset({ name: '', description: '', imageUrl: '', purchaseUrl: '', price: undefined })
     setDialogOpen(true)
   }
 
@@ -170,6 +173,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
       name: gift.name,
       description: gift.description ?? '',
       imageUrl: gift.imageUrl ?? '',
+      purchaseUrl: gift.purchaseUrl ?? '',
       price: gift.price ?? undefined,
     })
     setDialogOpen(true)
@@ -279,6 +283,17 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
                         {gift.description}
                       </div>
                     )}
+                    {gift.purchaseUrl && (
+                      <a
+                        href={gift.purchaseUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary mt-1 inline-flex items-center gap-1 text-xs hover:underline"
+                      >
+                        Ver link do presente
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm">
                     {gift.price != null ? formatBRL(gift.price) : 'A combinar'}
@@ -373,6 +388,17 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
               )}
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="g-purchase-url">Link do presente</Label>
+              <Input
+                id="g-purchase-url"
+                placeholder="https://loja.com/presente"
+                {...register('purchaseUrl')}
+              />
+              {errors.purchaseUrl && (
+                <p className="text-destructive text-xs">{errors.purchaseUrl.message}</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="g-price">Preco</Label>
               <Input
                 id="g-price"
@@ -425,6 +451,18 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
                       <p className="text-muted-foreground">{detailsGift.reservedByPhone}</p>
                     )}
                   </div>
+                )}
+
+                {detailsGift.purchaseUrl && (
+                  <a
+                    href={detailsGift.purchaseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary mt-3 inline-flex items-center gap-1 text-sm hover:underline"
+                  >
+                    Abrir link do presente
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
                 )}
               </div>
 

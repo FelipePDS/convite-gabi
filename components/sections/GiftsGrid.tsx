@@ -31,14 +31,15 @@ export function GiftsGrid({ initialGifts, buyer = null }: GiftsGridProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const canPurchase = Boolean(buyer?.invitationCode)
 
-  const handlePurchaseSuccess = (giftId: string) => {
+  const handlePurchaseSuccess = (giftId: string, updates?: Partial<GiftData>) => {
     setGifts((prev) =>
       sortGifts(
         prev.map((gift) =>
           gift.id === giftId
             ? {
                 ...gift,
-                status: 'RESERVED',
+                ...updates,
+                status: updates?.status ?? 'RESERVED',
               }
             : gift
         )
@@ -106,7 +107,11 @@ export function GiftsGrid({ initialGifts, buyer = null }: GiftsGridProps) {
             <GiftCard
               key={gift.id}
               gift={gift}
-              disabled={!canPurchase || gift.status === 'RESERVED' || gift.price == null}
+              disabled={
+                !canPurchase ||
+                (gift.status === 'RESERVED' && !gift.canUndoReservation) ||
+                (!gift.canUndoReservation && gift.price == null && !gift.purchaseUrl)
+              }
               viewMode={viewMode}
               onOpen={setOpenGift}
             />

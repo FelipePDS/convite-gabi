@@ -35,22 +35,45 @@ export function HeroSection({ event, guestName }: HeroSectionProps) {
   return (
     <section
       id="inicio"
-      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-neutral-950 text-white"
+      className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-[#06152b] text-white"
       aria-labelledby="hero-title"
     >
       {/* Decorative background */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.62_0.12_68/30%),transparent)]"
+        className="absolute inset-0"
+        style={{
+          background: `
+            linear-gradient(180deg, #06152b 0%, #091f3c 24%, #0e2b50 58%, #154a75 100%),
+            radial-gradient(ellipse 80% 58% at 50% -8%, rgba(133, 205, 235, 0.15) 0%, transparent 62%),
+            radial-gradient(ellipse 72% 54% at 50% 42%, rgba(9, 31, 60, 0.68) 0%, transparent 74%)
+          `,
+        }}
       />
       <div
         aria-hidden
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-x-0 bottom-0 h-[28%]"
+        style={{
+          background: `
+            radial-gradient(130% 95% at 12% 100%, rgba(43, 110, 157, 0.5) 0%, transparent 48%),
+            radial-gradient(110% 90% at 48% 100%, rgba(21, 74, 117, 0.66) 0%, transparent 50%),
+            radial-gradient(120% 95% at 84% 100%, rgba(43, 110, 157, 0.48) 0%, transparent 46%)
+          `,
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-45"
         style={{
           backgroundImage:
-            'radial-gradient(circle, oklch(0.78 0.12 82 / 15%) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
+            'radial-gradient(circle, rgba(133, 205, 235, 0.14) 1.2px, transparent 1.2px)',
+          backgroundSize: '42px 42px',
+          backgroundPosition: 'center center',
         }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(6,21,43,0.88),transparent)]"
       />
 
       {/* Content */}

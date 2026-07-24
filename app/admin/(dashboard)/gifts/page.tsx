@@ -23,6 +23,7 @@ export default async function AdminGiftsPage() {
     name: gift.name,
     description: gift.description ?? null,
     imageUrl: gift.imageUrl ?? null,
+    purchaseUrl: gift.purchaseUrl ?? null,
     price: gift.price ?? null,
     status: gift.status,
     reservedByName: gift.reservedByName ?? null,
