@@ -350,6 +350,23 @@ export function GiftPurchaseModal({
     }
   }, [open, gift, buyer?.invitationCode, checkoutResult?.purchaseId, checkoutResult?.payment.status])
 
+  const canPurchase = Boolean(buyer?.invitationCode)
+  const hasPrice = gift?.price != null && gift.price > 0
+  const canUseOnlineCheckout = canPurchase && hasPrice && Boolean(mercadopagoPublicKey)
+  const canUseExternalLink = canPurchase && Boolean(gift?.purchaseUrl)
+  const canManageManualFlow = canUseExternalLink || Boolean(gift?.canUndoReservation)
+  const autoSelectedFlow: CheckoutFlow | null =
+    !gift
+      ? null
+      : !gift.purchaseUrl && canUseOnlineCheckout
+        ? 'online'
+        : !canUseOnlineCheckout && canManageManualFlow
+          ? 'manual'
+          : null
+  const resolvedFlow = selectedFlow ?? autoSelectedFlow
+  const shouldShowFlowSelector =
+    !resolvedFlow && canUseOnlineCheckout && canManageManualFlow && Boolean(gift?.purchaseUrl)
+
   const submitCheckout = async (submission: {
     paymentType?: string
     selectedPaymentMethod: string
@@ -497,11 +514,6 @@ export function GiftPurchaseModal({
 
   if (!gift || !open) return null
 
-  const canPurchase = Boolean(buyer?.invitationCode)
-  const hasPrice = gift.price != null && gift.price > 0
-  const canUseOnlineCheckout = canPurchase && hasPrice && Boolean(mercadopagoPublicKey)
-  const canUseExternalLink = canPurchase && Boolean(gift.purchaseUrl)
-  const canManageManualFlow = canUseExternalLink || gift.canUndoReservation
   const successContent = getSuccessContent(successMode, gift.name)
   const qrCodeImageSrc = buildQrCodeImageSrc(checkoutResult?.payment.qrCodeBase64 ?? null)
   const buyerName = buyer ? splitBuyerName(buyer.name) : null
@@ -697,7 +709,7 @@ export function GiftPurchaseModal({
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {!selectedFlow && (canUseOnlineCheckout || canManageManualFlow) && (
+                  {shouldShowFlowSelector && (
                     <div className="space-y-4">
                       <div className="space-y-1 rounded-2xl border border-dashed px-4 py-4">
                         <p className="text-sm font-medium">Como você prefere seguir?</p>
@@ -748,7 +760,7 @@ export function GiftPurchaseModal({
                     </div>
                   )}
 
-                  {selectedFlow === 'online' && canUseOnlineCheckout && (
+                  {resolvedFlow === 'online' && canUseOnlineCheckout && (
                     <div className="space-y-4 rounded-2xl border px-3 py-4 sm:px-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="space-y-1">
@@ -761,18 +773,20 @@ export function GiftPurchaseModal({
                           </p>
                         </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="shrink-0 gap-1"
-                          onClick={() => {
-                            setSelectedFlow(null)
-                          }}
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                          Voltar
-                        </Button>
+                        {shouldShowFlowSelector && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0 gap-1"
+                            onClick={() => {
+                              setSelectedFlow(null)
+                            }}
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                            Voltar
+                          </Button>
+                        )}
                       </div>
 
                       <div className="bg-background inline-flex w-full items-center gap-1 rounded-full border p-1">
@@ -864,7 +878,7 @@ export function GiftPurchaseModal({
                     </div>
                   )}
 
-                  {selectedFlow === 'manual' && canManageManualFlow && (
+                  {resolvedFlow === 'manual' && canManageManualFlow && (
                     <div className="space-y-4 rounded-2xl border px-4 py-4">
                       <div className="flex items-center justify-between gap-3">
                         <div className="space-y-1">
@@ -877,18 +891,20 @@ export function GiftPurchaseModal({
                           </p>
                         </div>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="shrink-0 gap-1"
-                          onClick={() => {
-                            setSelectedFlow(null)
-                          }}
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                          Voltar
-                        </Button>
+                        {shouldShowFlowSelector && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0 gap-1"
+                            onClick={() => {
+                              setSelectedFlow(null)
+                            }}
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                            Voltar
+                          </Button>
+                        )}
                       </div>
 
                       {gift.purchaseUrl && (

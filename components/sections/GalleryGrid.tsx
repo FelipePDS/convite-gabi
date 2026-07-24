@@ -22,6 +22,14 @@ interface GalleryGridProps {
   items: GalleryItemData[]
 }
 
+function getTileHeightClass(compact: boolean) {
+  if (compact) {
+    return 'h-[210px] sm:h-[240px] lg:h-[280px]'
+  }
+
+  return 'h-[280px] sm:h-[340px] lg:h-[400px]'
+}
+
 function GalleryTile({
   item,
   index,
@@ -47,7 +55,7 @@ function GalleryTile({
       aria-label={item.caption ?? `Abrir item ${index + 1} da galeria`}
     >
       <div className="relative overflow-hidden rounded-2xl">
-        <div className={`relative w-full ${compact ? 'aspect-square' : 'aspect-[3/4]'}`}>
+        <div className={`relative w-full ${getTileHeightClass(compact)}`}>
           <Image
             src={thumb}
             alt={item.caption ?? `Galeria item ${index + 1}`}
@@ -55,8 +63,8 @@ function GalleryTile({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes={
               compact
-                ? '(max-width: 640px) 44vw, 160px'
-                : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'
+                ? '(max-width: 640px) 44vw, (max-width: 1024px) 30vw, 220px'
+                : '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px'
             }
           />
         </div>
@@ -134,7 +142,7 @@ export function GalleryGrid({ items }: GalleryGridProps) {
             </DialogHeader>
 
             <div className="overflow-y-auto px-4 py-4 sm:px-5">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((item, index) => (
                   <GalleryTile
                     key={`${item.id}-modal`}
