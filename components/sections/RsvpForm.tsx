@@ -125,6 +125,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
       json.companionNames ?? data.companionNames.map((companion) => companion.name)
     )
     setShowSuccess(true)
+    window.dispatchEvent(new CustomEvent('invite-rsvp-confirmed'))
   }
 
   if (showSuccess && confirmedName) {

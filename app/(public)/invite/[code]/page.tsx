@@ -75,9 +75,14 @@ export default async function InvitePage({ params }: Props) {
 
   return (
     <>
+      <div
+        id="invite-onboarding-state"
+        data-confirmed={alreadyConfirmed ? 'true' : 'false'}
+        hidden
+        aria-hidden
+      />
       <HeroSection event={event} guestName={guest.name} />
       <AboutSection event={event} />
-      <GallerySection />
       <EventInfoSection event={event} />
       <RsvpSection
         event={event}
@@ -92,6 +97,7 @@ export default async function InvitePage({ params }: Props) {
       <GiftsSection
         buyer={giftBuyer}
       />
+      <GallerySection />
       {/* <PixSection event={event} /> */}
     </>
   )

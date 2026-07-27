@@ -46,13 +46,13 @@ export default async function HomePage() {
     <>
       <HeroSection event={event} />
       <AboutSection event={event} />
-      <Suspense fallback={<GallerySkeleton />}>
-        <GallerySection />
-      </Suspense>
       <EventInfoSection event={event} />
       <InviteLockedSection contact={event.contact} />
       <Suspense fallback={<GiftsSkeleton />}>
         <GiftsSection />
+      </Suspense>
+      <Suspense fallback={<GallerySkeleton />}>
+        <GallerySection />
       </Suspense>
       {/* <PixSection event={event} /> */}
     </>

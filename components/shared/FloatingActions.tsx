@@ -1,21 +1,26 @@
 import { Check, Gift } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { MusicPlayer } from './MusicPlayer'
 
 interface FloatingActionsProps {
   musicSrc?: string
+  highlight?: boolean
 }
 
-export function FloatingActions({ musicSrc }: FloatingActionsProps) {
+export function FloatingActions({ musicSrc, highlight = false }: FloatingActionsProps) {
   return (
     <div
       className="fixed bottom-6 right-4 z-40 flex flex-col items-end gap-3"
-      aria-label="Acoes rapidas"
+      aria-label="Ações rápidas"
     >
       <div className="flex flex-col items-end gap-2">
         <a
           href="#presentes"
-          className="bg-background/88 text-foreground hover:bg-background flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-sm ring-1 ring-border transition-all hover:-translate-y-0.5"
-          aria-label="Ir para a secao de presentes"
+          className={cn(
+            'bg-background/88 text-foreground hover:bg-background flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-sm ring-1 ring-border transition-all hover:-translate-y-0.5',
+            highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
+          )}
+          aria-label="Ir para a seção de presentes"
         >
           <Gift className="h-3.5 w-3.5 text-primary" />
           <span>Presentear</span>
@@ -23,8 +28,11 @@ export function FloatingActions({ musicSrc }: FloatingActionsProps) {
 
         <a
           href="#confirmar"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg transition-all hover:-translate-y-0.5"
-          aria-label="Ir para a secao de confirmacao de presenca"
+          className={cn(
+            'bg-primary text-primary-foreground hover:bg-primary/90 flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg transition-all hover:-translate-y-0.5',
+            highlight && 'animate-pulse ring-2 ring-white/70 shadow-[0_0_0_10px_rgba(255,255,255,0.12)]'
+          )}
+          aria-label="Ir para a seção de confirmação de presença"
         >
           <Check className="h-3.5 w-3.5" />
           <span>Confirmar</span>
