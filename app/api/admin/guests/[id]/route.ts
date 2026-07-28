@@ -22,6 +22,11 @@ const updateCompanionsSchema = z.object({
     .max(19),
 })
 
+const updateGuestSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  phone: z.string().trim().min(10).max(20),
+})
+
 function normalizeCompanions(companions: { id?: string; name: string }[]) {
   const unique = new Set<string>()
 
@@ -31,6 +36,101 @@ function normalizeCompanions(companions: { id?: string; name: string }[]) {
     unique.add(key)
     return true
   })
+}
+
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await req.json().catch(() => null)
+  const parsed = updateGuestSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 422 })
+  }
+
+  const { id } = await params
+
+  try {
+    const guest = await prisma.guest.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        primaryGuestId: true,
+      },
+    })
+
+    if (!guest) {
+      return NextResponse.json({ error: 'Convidado não encontrado' }, { status: 404 })
+    }
+
+    const updatedGuest = await prisma.$transaction(async (tx) => {
+      const data = guest.primaryGuestId
+        ? {
+            name: parsed.data.name.trim(),
+          }
+        : {
+            name: parsed.data.name.trim(),
+            phone: parsed.data.phone.trim(),
+          }
+
+      const updated = await tx.guest.update({
+        where: { id },
+        data,
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          guestCount: true,
+          status: true,
+          message: true,
+          invitationCode: true,
+          confirmedAt: true,
+          viewedAt: true,
+          createdAt: true,
+          primaryGuestId: true,
+          primaryGuest: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      })
+
+      if (!guest.primaryGuestId) {
+        await tx.guest.updateMany({
+          where: { primaryGuestId: id },
+          data: {
+            phone: parsed.data.phone.trim(),
+          },
+        })
+      }
+
+      return updated
+    })
+
+    return NextResponse.json({
+      success: true,
+      guest: {
+        ...updatedGuest,
+        phone: updatedGuest.phone ?? '',
+        message: updatedGuest.message ?? null,
+        invitationCode: updatedGuest.invitationCode ?? null,
+        confirmedAt: updatedGuest.confirmedAt?.toISOString() ?? null,
+        viewedAt: updatedGuest.viewedAt?.toISOString() ?? null,
+        createdAt: updatedGuest.createdAt.toISOString(),
+        primaryGuestId: updatedGuest.primaryGuestId ?? null,
+        primaryGuestName: updatedGuest.primaryGuest?.name ?? null,
+      },
+    })
+  } catch (error) {
+    console.error('[PUT /api/admin/guests/[id]]', error)
+    return NextResponse.json({ error: 'Erro ao atualizar convidado.' }, { status: 500 })
+  }
 }
 
 export async function PATCH(

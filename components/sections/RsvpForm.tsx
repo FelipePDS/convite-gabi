@@ -232,7 +232,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
                 <p className="text-sm font-semibold">Acompanhantes do seu convite</p>
               </div>
               <p className="text-muted-foreground text-sm">
-                Os acompanhantes são definidos pelo admin. Aqui você pode apenas confirmar ou cancelar a presença deles, inclusive depois da sua confirmação.
+                Aqui você pode confirmar ou cancelar a presença dos seus acompanhantes.
               </p>
             </div>
 

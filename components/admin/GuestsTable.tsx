@@ -11,6 +11,7 @@ import {
   Download,
   Link2,
   Loader2,
+  Pencil,
   Search,
   Share2,
   Trash2,
@@ -84,8 +85,14 @@ const manageCompanionsSchema = z.object({
     .max(19, 'Máximo de 19 acompanhantes'),
 })
 
+const editGuestSchema = z.object({
+  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
+  phone: z.string().min(10, 'Inclua o DDD').max(20),
+})
+
 type CreateData = z.infer<typeof createSchema>
 type ManageCompanionsData = z.infer<typeof manageCompanionsSchema>
+type EditGuestData = z.infer<typeof editGuestSchema>
 
 type ManageTarget = {
   id: string
@@ -438,6 +445,129 @@ function ManageCompanionsModal({
   )
 }
 
+function EditGuestModal({
+  open,
+  onClose,
+  guest,
+  onSaved,
+}: {
+  open: boolean
+  onClose: () => void
+  guest: Guest | null
+  onSaved: (guest: Guest) => void
+}) {
+  const isCompanion = Boolean(guest?.primaryGuestId)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<EditGuestData>({
+    resolver: zodResolver(editGuestSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+    },
+  })
+
+  useEffect(() => {
+    if (!open || !guest) return
+
+    reset({
+      name: guest.name,
+      phone: guest.phone,
+    })
+  }, [guest, open, reset])
+
+  const onSubmit = async (data: EditGuestData) => {
+    if (!guest) return
+
+    const response = await fetch(`/api/admin/guests/${guest.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+
+    const text = await response.text()
+    const json = text ? JSON.parse(text) : {}
+
+    if (!response.ok) {
+      toast.error(json.error ?? 'Erro ao atualizar convidado')
+      return
+    }
+
+    onSaved(json.guest as Guest)
+    toast.success('Convidado atualizado com sucesso!')
+    onClose()
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose()
+          reset({ name: '', phone: '' })
+        }
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar convidado</DialogTitle>
+          <DialogDescription>
+            {isCompanion ? (
+              <>
+                Atualize os dados de <strong>{guest?.name ?? ''}</strong>. O telefone
+                continua vinculado ao convite principal.
+              </>
+            ) : (
+              <>
+                Atualize os dados de <strong>{guest?.name ?? ''}</strong>. Se mudar o
+                telefone, os acompanhantes deste convite também serão atualizados.
+              </>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="e-name">Nome completo *</Label>
+            <Input id="e-name" placeholder="Nome do convidado" {...register('name')} />
+            {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="e-phone">WhatsApp / Telefone *</Label>
+            <Input
+              id="e-phone"
+              type="tel"
+              placeholder="(11) 91234-5678"
+              disabled={isCompanion}
+              {...register('phone')}
+            />
+            {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
+            {isCompanion && (
+              <p className="text-muted-foreground text-xs">
+                O telefone deste acompanhante é herdado do convidado principal.
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Salvar alterações'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
   const [guests, setGuests] = useState<Guest[]>(() => sortGuests(initialGuests))
   const [search, setSearch] = useState('')
@@ -445,6 +575,7 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
   const [createOpen, setCreateOpen] = useState(false)
   const [shareGuest, setShareGuest] = useState<{ name: string; invitationCode: string } | null>(null)
   const [manageGuest, setManageGuest] = useState<ManageTarget | null>(null)
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingGuestId, setDeletingGuestId] = useState<string | null>(null)
   const [generatingCode, setGeneratingCode] = useState<string | null>(null)
 
@@ -628,6 +759,38 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
     })
   }
 
+  const handleGuestSaved = (updatedGuest: Guest) => {
+    setGuests((prev) =>
+      sortGuests(
+        prev.map((item) => {
+          if (item.id === updatedGuest.id) {
+            return {
+              ...item,
+              ...updatedGuest,
+            }
+          }
+
+          if (!updatedGuest.primaryGuestId && item.primaryGuestId === updatedGuest.id) {
+            return {
+              ...item,
+              phone: updatedGuest.phone,
+              primaryGuestName: updatedGuest.name,
+            }
+          }
+
+          return item
+        })
+      )
+    )
+
+    if (updatedGuest.invitationCode && shareGuest?.invitationCode === updatedGuest.invitationCode) {
+      setShareGuest({
+        name: updatedGuest.name,
+        invitationCode: updatedGuest.invitationCode,
+      })
+    }
+  }
+
   return (
     <>
       <div className="space-y-4">
@@ -746,6 +909,15 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
+                          <button
+                            title="Editar convidado"
+                            aria-label={`Editar convidado ${guest.name}`}
+                            onClick={() => setEditingGuest(guest)}
+                            className="text-muted-foreground hover:text-primary rounded p-1 transition-colors"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+
                           {isPrimary && (
                             <button
                               title="Gerenciar acompanhantes"
@@ -916,6 +1088,13 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
         guest={manageGuest}
         guests={guests}
         onSaved={handleCompanionsSaved}
+      />
+
+      <EditGuestModal
+        open={!!editingGuest}
+        onClose={() => setEditingGuest(null)}
+        guest={editingGuest}
+        onSaved={handleGuestSaved}
       />
 
       <ShareInviteModal
