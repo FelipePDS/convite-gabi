@@ -10,7 +10,12 @@ interface RsvpSectionProps {
     name?: string
     phone?: string
     invitationCode: string
-    companionNames?: string[]
+    companions?: {
+      id: string
+      name: string
+      status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+      confirmedAt: string | null
+    }[]
   }
   initialConfirmedName?: string
 }

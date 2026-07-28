@@ -1,11 +1,18 @@
 'use client'
 
-import { forwardRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import {
+  forwardRef,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { Check, Loader2, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { RsvpSuccess } from './RsvpSuccess'
 import { rsvpSchema, type RsvpFormData } from '@/lib/validations/rsvp'
 import { cn } from '@/lib/utils'
@@ -15,7 +22,7 @@ const inputBase =
 
 const ElegantInput = forwardRef<
   HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
+  InputHTMLAttributes<HTMLInputElement>
 >(({ className, ...props }, ref) => (
   <input ref={ref} className={cn(inputBase, className)} {...props} />
 ))
@@ -23,7 +30,7 @@ ElegantInput.displayName = 'ElegantInput'
 
 const ElegantTextarea = forwardRef<
   HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+  TextareaHTMLAttributes<HTMLTextAreaElement>
 >(({ className, ...props }, ref) => (
   <textarea
     ref={ref}
@@ -40,9 +47,9 @@ function Field({
   children,
 }: {
   id: string
-  label: React.ReactNode
+  label: ReactNode
   error?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="space-y-1">
@@ -58,13 +65,20 @@ function Field({
   )
 }
 
+type CompanionPrefill = {
+  id: string
+  name: string
+  status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+  confirmedAt: string | null
+}
+
 interface RsvpFormProps {
   eventDate: string
   prefill?: {
     name?: string
     phone?: string
     invitationCode: string
-    companionNames?: string[]
+    companions?: CompanionPrefill[]
   }
   initialConfirmedName?: string
 }
@@ -72,13 +86,31 @@ interface RsvpFormProps {
 type RsvpResponse = {
   success: boolean
   name: string
+  companions?: {
+    id: string
+    name: string
+    status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+  }[]
 }
 
 export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormProps) {
   const [confirmedName, setConfirmedName] = useState<string | null>(initialConfirmedName ?? null)
   const [showSuccess, setShowSuccess] = useState(Boolean(initialConfirmedName))
+  const [savedCompanions, setSavedCompanions] = useState<
+    { id: string; name: string; status: 'PENDING' | 'CONFIRMED' | 'DECLINED' }[]
+  >(
+    (prefill?.companions ?? []).map((companion) => ({
+      id: companion.id,
+      name: companion.name,
+      status: companion.status,
+    }))
+  )
+
+  const companionDefinitions = prefill?.companions ?? []
+  const allowCompanionManagement = companionDefinitions.length > 0
 
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -89,21 +121,29 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     defaultValues: {
       name: prefill?.name ?? '',
       phone: prefill?.phone ?? '',
-      companionNames: [],
+      companionAttendance: companionDefinitions.map((companion) => ({
+        id: companion.id,
+        attending: companion.status === 'CONFIRMED',
+      })),
       invitationCode: prefill?.invitationCode,
     },
   })
 
-  const onSubmit = async (data: RsvpFormData) => {
-    const payload = {
-      ...data,
-      companionNames: [],
-    }
+  const watchedCompanionAttendance = useWatch({
+    control,
+    name: 'companionAttendance',
+  })
 
+  const displayedCompanions = companionDefinitions.map((companion, index) => ({
+    ...companion,
+    attending: watchedCompanionAttendance?.[index]?.attending ?? companion.status === 'CONFIRMED',
+  }))
+
+  const onSubmit = async (data: RsvpFormData) => {
     const res = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     })
 
     const json = (await res.json()) as RsvpResponse & { error?: string }
@@ -114,6 +154,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     }
 
     setConfirmedName(json.name ?? data.name)
+    setSavedCompanions(json.companions ?? [])
     setShowSuccess(true)
     window.dispatchEvent(new CustomEvent('invite-rsvp-confirmed'))
   }
@@ -123,16 +164,25 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
       <RsvpSuccess
         guestName={confirmedName}
         eventDate={eventDate}
+        companions={savedCompanions}
+        onEdit={
+          allowCompanionManagement
+            ? () => {
+                setShowSuccess(false)
+              }
+            : undefined
+        }
         onReset={
           prefill
             ? undefined
             : () => {
                 setConfirmedName(null)
+                setSavedCompanions([])
                 setShowSuccess(false)
                 reset({
                   name: '',
                   phone: '',
-                  companionNames: [],
+                  companionAttendance: [],
                   invitationCode: undefined,
                 })
               }
@@ -174,11 +224,67 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           />
         </Field>
 
-        {/* Seção de acompanhantes temporariamente desativada.
-        <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
-          ...
-        </div>
-        */}
+        {allowCompanionManagement && (
+          <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Users className="text-primary h-4 w-4" />
+                <p className="text-sm font-semibold">Acompanhantes do seu convite</p>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                Os acompanhantes são definidos pelo admin. Aqui você pode apenas confirmar ou cancelar a presença deles, inclusive depois da sua confirmação.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {displayedCompanions.map((companion, index) => (
+                <div
+                  key={companion.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border px-3 py-3"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{companion.name}</p>
+                    <Badge variant={companion.attending ? 'default' : 'secondary'}>
+                      {companion.attending ? 'Presença confirmada' : 'Presença pendente'}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input type="hidden" {...register(`companionAttendance.${index}.id`)} />
+                    <Controller
+                      control={control}
+                      name={`companionAttendance.${index}.attending`}
+                      render={({ field }) =>
+                        field.value ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => field.onChange(false)}
+                          >
+                            <X className="h-4 w-4" />
+                            Cancelar
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => field.onChange(true)}
+                          >
+                            <Check className="h-4 w-4" />
+                            Confirmar
+                          </Button>
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Field
           id="rsvp-message"

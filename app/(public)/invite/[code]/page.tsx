@@ -90,7 +90,7 @@ export default async function InvitePage({ params }: Props) {
           name: guest.name,
           phone: guest.phone ?? undefined,
           invitationCode: guest.invitationCode,
-          companionNames: guest.companionNames,
+          companions: guest.companions,
         }}
         initialConfirmedName={alreadyConfirmed ? guest.name : undefined}
       />

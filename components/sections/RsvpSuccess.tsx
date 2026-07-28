@@ -2,9 +2,10 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Heart, PartyPopper } from 'lucide-react'
+import { CheckCircle2, Heart, PartyPopper, Users } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 const GOLD_PALETTE = ['#C9A84C', '#E8C878', '#FFE4B5', '#F5DEB3', '#fff7e6']
 
@@ -35,13 +36,21 @@ function launchConfetti() {
 interface RsvpSuccessProps {
   guestName: string
   eventDate: string
+  companions?: {
+    id: string
+    name: string
+    status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+  }[]
   onReset?: () => void
+  onEdit?: () => void
 }
 
 export function RsvpSuccess({
   guestName,
   eventDate,
+  companions = [],
   onReset,
+  onEdit,
 }: RsvpSuccessProps) {
   useEffect(() => {
     launchConfetti()
@@ -86,13 +95,32 @@ export function RsvpSuccess({
         <Heart className="h-4 w-4 fill-current" />
       </div>
 
-      {/* Resumo de acompanhantes temporariamente desativado.
-      <div className="bg-muted/60 w-full rounded-2xl px-4 py-3 text-left">
-        ...
-      </div>
-      */}
+      {companions.length > 0 && (
+        <div className="bg-muted/60 w-full rounded-2xl px-4 py-3 text-left">
+          <div className="mb-2 flex items-center gap-2">
+            <Users className="text-primary h-4 w-4" />
+            <p className="text-sm font-semibold">Acompanhantes do convite</p>
+          </div>
+          <div className="space-y-2">
+            {companions.map((companion) => (
+              <div key={companion.id} className="flex items-center justify-between gap-3">
+                <span className="text-sm">{companion.name}</span>
+                <Badge variant={companion.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                  {companion.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex w-full flex-col gap-2">
+        {onEdit && (
+          <Button variant="outline" onClick={onEdit}>
+            Gerenciar acompanhantes
+          </Button>
+        )}
+
         {onReset && (
           <Button variant="outline" size="sm" onClick={onReset}>
             Confirmar outro convidado

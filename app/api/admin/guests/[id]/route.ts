@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
@@ -9,6 +10,134 @@ const ACTIVE_PURCHASE_STATUSES = [
   GiftPurchaseStatus.IN_PROCESS,
   GiftPurchaseStatus.APPROVED,
 ] as const
+
+const updateCompanionsSchema = z.object({
+  companions: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().trim().min(2).max(100),
+      })
+    )
+    .max(19),
+})
+
+function normalizeCompanions(companions: { id?: string; name: string }[]) {
+  const unique = new Set<string>()
+
+  return companions.filter((companion) => {
+    const key = companion.name.trim().toLowerCase()
+    if (!key || unique.has(key)) return false
+    unique.add(key)
+    return true
+  })
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const body = await req.json().catch(() => null)
+  const parsed = updateCompanionsSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 422 })
+  }
+
+  const { id } = await params
+  const companions = normalizeCompanions(parsed.data.companions)
+
+  try {
+    const guest = await prisma.guest.findUnique({
+      where: { id },
+      select: { id: true, phone: true, primaryGuestId: true },
+    })
+
+    if (!guest) {
+      return NextResponse.json({ error: 'Convidado não encontrado' }, { status: 404 })
+    }
+
+    if (guest.primaryGuestId) {
+      return NextResponse.json(
+        { error: 'Gerencie acompanhantes apenas pelo convidado principal.' },
+        { status: 422 }
+      )
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const existingCompanions = await tx.guest.findMany({
+        where: { primaryGuestId: id },
+        select: { id: true, name: true, status: true, confirmedAt: true },
+      })
+
+      const existingById = new Map(existingCompanions.map((companion) => [companion.id, companion]))
+      const incomingIds = new Set(companions.map((companion) => companion.id).filter(Boolean) as string[])
+
+      for (const companion of companions) {
+        if (companion.id && existingById.has(companion.id)) {
+          await tx.guest.update({
+            where: { id: companion.id },
+            data: { name: companion.name.trim() },
+          })
+          continue
+        }
+
+        await tx.guest.create({
+          data: {
+            name: companion.name.trim(),
+            phone: guest.phone,
+            guestCount: 1,
+            status: 'PENDING',
+            primaryGuestId: id,
+          },
+        })
+      }
+
+      const removedCompanions = existingCompanions.filter((companion) => !incomingIds.has(companion.id))
+      if (removedCompanions.length > 0) {
+        await tx.guest.deleteMany({
+          where: {
+            id: { in: removedCompanions.map((companion) => companion.id) },
+          },
+        })
+      }
+
+      const refreshedCompanions = await tx.guest.findMany({
+        where: { primaryGuestId: id },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, name: true, status: true, confirmedAt: true, createdAt: true },
+      })
+
+      await tx.guest.update({
+        where: { id },
+        data: {
+          guestCount: refreshedCompanions.length + 1,
+        },
+      })
+
+      return refreshedCompanions
+    })
+
+    return NextResponse.json({
+      success: true,
+      companions: updated.map((companion) => ({
+        id: companion.id,
+        name: companion.name,
+        status: companion.status,
+        confirmedAt: companion.confirmedAt?.toISOString() ?? null,
+        createdAt: companion.createdAt.toISOString(),
+      })),
+      guestCount: updated.length + 1,
+    })
+  } catch (error) {
+    console.error('[PATCH /api/admin/guests/[id]]', error)
+    return NextResponse.json({ error: 'Erro ao atualizar acompanhantes.' }, { status: 500 })
+  }
+}
 
 export async function DELETE(
   _req: Request,

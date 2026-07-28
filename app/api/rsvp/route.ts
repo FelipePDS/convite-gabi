@@ -5,11 +5,11 @@ import prisma from '@/lib/db'
 const apiSchema = z.object({
   name: z.string().min(2).max(100),
   phone: z.string().min(10).max(20),
-  guestCount: z.coerce.number().int().min(1).max(20).optional(),
-  companionNames: z
+  companionAttendance: z
     .array(
       z.object({
-        name: z.string().trim().min(2).max(100),
+        id: z.string().min(1),
+        attending: z.boolean(),
       })
     )
     .max(19)
@@ -18,18 +18,16 @@ const apiSchema = z.object({
   invitationCode: z.string().optional(),
 })
 
-function normalizeCompanionNames(companions: { name: string }[] | undefined) {
-  const unique = new Set<string>()
+function normalizeCompanionAttendance(
+  companions: { id: string; attending: boolean }[] | undefined
+) {
+  const unique = new Map<string, boolean>()
 
-  return (companions ?? []).filter((companion) => {
-    const key = companion.name.trim().toLowerCase()
-    if (!key || unique.has(key)) {
-      return false
-    }
+  for (const companion of companions ?? []) {
+    unique.set(companion.id, companion.attending)
+  }
 
-    unique.add(key)
-    return true
-  })
+  return [...unique.entries()].map(([id, attending]) => ({ id, attending }))
 }
 
 export async function POST(req: Request) {
@@ -48,16 +46,7 @@ export async function POST(req: Request) {
     )
   }
 
-  const companionNames = normalizeCompanionNames(parsed.data.companionNames)
-  const totalGuestCount = companionNames.length + 1
-
-  if (totalGuestCount > 20) {
-    return NextResponse.json(
-      { error: 'Máximo de 20 pessoas por confirmação.' },
-      { status: 422 }
-    )
-  }
-
+  const companionAttendance = normalizeCompanionAttendance(parsed.data.companionAttendance)
   const invitationCode = parsed.data.invitationCode?.toUpperCase()
 
   try {
@@ -65,7 +54,6 @@ export async function POST(req: Request) {
       const baseData = {
         name: parsed.data.name,
         phone: parsed.data.phone,
-        guestCount: totalGuestCount,
         message: parsed.data.message ?? null,
         status: 'CONFIRMED' as const,
         confirmedAt: new Date(),
@@ -84,12 +72,15 @@ export async function POST(req: Request) {
           guestId = existing.id
           await tx.guest.update({
             where: { id: existing.id },
-            data: baseData,
+            data: {
+              ...baseData,
+            },
           })
         } else {
           const created = await tx.guest.create({
             data: {
               ...baseData,
+              guestCount: 1,
               invitationCode,
             },
             select: { id: true },
@@ -98,35 +89,61 @@ export async function POST(req: Request) {
         }
       } else {
         const created = await tx.guest.create({
-          data: baseData,
+          data: {
+            ...baseData,
+            guestCount: 1,
+          },
           select: { id: true },
         })
         guestId = created.id
       }
 
-      await tx.guest.deleteMany({
+      const existingCompanions = await tx.guest.findMany({
         where: { primaryGuestId: guestId },
+        select: { id: true, name: true },
+        orderBy: { createdAt: 'asc' },
       })
 
-      if (companionNames.length > 0) {
-        await tx.guest.createMany({
-          data: companionNames.map((companion) => ({
-            name: companion.name.trim(),
+      const validCompanionIds = new Set(existingCompanions.map((companion) => companion.id))
+      const attendanceById = new Map(
+        companionAttendance
+          .filter((companion) => validCompanionIds.has(companion.id))
+          .map((companion) => [companion.id, companion.attending])
+      )
+
+      for (const companion of existingCompanions) {
+        const attending = attendanceById.get(companion.id) ?? false
+
+        await tx.guest.update({
+          where: { id: companion.id },
+          data: {
             phone: parsed.data.phone,
-            guestCount: 1,
-            message: null,
-            status: 'CONFIRMED',
-            confirmedAt: new Date(),
-            primaryGuestId: guestId,
-          })),
+            status: attending ? 'CONFIRMED' : 'PENDING',
+            confirmedAt: attending ? new Date() : null,
+          },
         })
       }
+
+      const confirmedCompanions = existingCompanions.filter((companion) =>
+        attendanceById.get(companion.id)
+      )
+
+      await tx.guest.update({
+        where: { id: guestId },
+        data: {
+          guestCount: existingCompanions.length + 1,
+        },
+      })
 
       return {
         success: true,
         name: parsed.data.name,
-        companionNames: companionNames.map((companion) => companion.name.trim()),
-        guestCount: totalGuestCount,
+        companions: existingCompanions.map((companion) => ({
+          id: companion.id,
+          name: companion.name,
+          status: attendanceById.get(companion.id) ? 'CONFIRMED' : 'PENDING',
+        })),
+        confirmedCompanionCount: confirmedCompanions.length,
       }
     })
 
