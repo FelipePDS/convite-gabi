@@ -113,7 +113,7 @@ function ShareInviteModal({
       : `/invite/${guest.invitationCode}`
 
   const whatsappText = encodeURIComponent(
-    `Ola ${guest.name}! Voce foi convidado para uma celebracao especial do aniversario de *15 anos da Gaby*.\n\nPedimos por gentileza que *confirme sua presenca ate o dia 01 de setembro*, pois o buffet sera contratado de acordo com o numero de convidados confirmados.\n\nNeste link voce pode confirmar sua presenca e presentear a aniversariante: ${inviteUrl}`
+    `Olá, *${guest.name}*!\n\nVocê foi convidado para uma celebração especial do aniversário de *15 anos da Gaby*.\n\nPedimos, por gentileza, que *confirme sua presença até o dia 01 de setembro*, pois o buffet será contratado de acordo com o número de convidados confirmados.\n\nNeste link você pode confirmar sua presença e presentear a aniversariante:\n${inviteUrl}`
   )
 
   const handleCopy = async () => {

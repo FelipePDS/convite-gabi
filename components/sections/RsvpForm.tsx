@@ -1,10 +1,10 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Loader2, Plus, Trash2, Users } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RsvpSuccess } from './RsvpSuccess'
 import { rsvpSchema, type RsvpFormData } from '@/lib/validations/rsvp'
@@ -72,21 +72,14 @@ interface RsvpFormProps {
 type RsvpResponse = {
   success: boolean
   name: string
-  companionNames?: string[]
 }
 
 export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormProps) {
   const [confirmedName, setConfirmedName] = useState<string | null>(initialConfirmedName ?? null)
-  const [confirmedCompanions, setConfirmedCompanions] = useState<string[]>(
-    prefill?.companionNames ?? []
-  )
   const [showSuccess, setShowSuccess] = useState(Boolean(initialConfirmedName))
-
-  const allowCompanionManagement = Boolean(prefill?.invitationCode)
 
   const {
     register,
-    control,
     handleSubmit,
     setError,
     reset,
@@ -96,21 +89,21 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     defaultValues: {
       name: prefill?.name ?? '',
       phone: prefill?.phone ?? '',
-      companionNames: (prefill?.companionNames ?? []).map((name) => ({ name })),
+      companionNames: [],
       invitationCode: prefill?.invitationCode,
     },
   })
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'companionNames',
-  })
-
   const onSubmit = async (data: RsvpFormData) => {
+    const payload = {
+      ...data,
+      companionNames: [],
+    }
+
     const res = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     })
 
     const json = (await res.json()) as RsvpResponse & { error?: string }
@@ -121,9 +114,6 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     }
 
     setConfirmedName(json.name ?? data.name)
-    setConfirmedCompanions(
-      json.companionNames ?? data.companionNames.map((companion) => companion.name)
-    )
     setShowSuccess(true)
     window.dispatchEvent(new CustomEvent('invite-rsvp-confirmed'))
   }
@@ -133,20 +123,11 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
       <RsvpSuccess
         guestName={confirmedName}
         eventDate={eventDate}
-        companions={confirmedCompanions}
-        onEdit={
-          allowCompanionManagement
-            ? () => {
-                setShowSuccess(false)
-              }
-            : undefined
-        }
         onReset={
           prefill
             ? undefined
             : () => {
                 setConfirmedName(null)
-                setConfirmedCompanions([])
                 setShowSuccess(false)
                 reset({
                   name: '',
@@ -193,68 +174,11 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           />
         </Field>
 
-        {allowCompanionManagement && (
-          <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Users className="text-primary h-4 w-4" />
-                  <p className="text-sm font-semibold">Acompanhantes</p>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0 gap-2"
-                onClick={() => append({ name: '' })}
-                disabled={fields.length >= 19}
-              >
-                <Plus className="h-4 w-4" />
-                Adicionar
-              </Button>
-            </div>
-
-            {fields.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                Nenhum acompanhante adicionado ainda.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="rounded-xl border px-3 py-3">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium">Acompanhante {index + 1}</p>
-                      <button
-                        type="button"
-                        onClick={() => remove(index)}
-                        className="text-muted-foreground hover:text-destructive rounded-full p-1 transition-colors"
-                        aria-label={`Remover acompanhante ${index + 1}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <ElegantInput
-                      placeholder="Nome do acompanhante"
-                      aria-invalid={!!errors.companionNames?.[index]?.name}
-                      {...register(`companionNames.${index}.name`)}
-                    />
-                    {errors.companionNames?.[index]?.name && (
-                      <p className="text-destructive pt-2 text-xs">
-                        {errors.companionNames[index]?.name?.message}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {typeof errors.companionNames?.message === 'string' && (
-              <p className="text-destructive text-xs">{errors.companionNames.message}</p>
-            )}
-          </div>
-        )}
+        {/* Seção de acompanhantes temporariamente desativada.
+        <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
+          ...
+        </div>
+        */}
 
         <Field
           id="rsvp-message"

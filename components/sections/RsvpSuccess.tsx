@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Heart, PartyPopper, Users } from 'lucide-react'
+import { CheckCircle2, Heart, PartyPopper } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 
@@ -35,17 +35,13 @@ function launchConfetti() {
 interface RsvpSuccessProps {
   guestName: string
   eventDate: string
-  companions?: string[]
   onReset?: () => void
-  onEdit?: () => void
 }
 
 export function RsvpSuccess({
   guestName,
   eventDate,
-  companions = [],
   onReset,
-  onEdit,
 }: RsvpSuccessProps) {
   useEffect(() => {
     launchConfetti()
@@ -90,38 +86,13 @@ export function RsvpSuccess({
         <Heart className="h-4 w-4 fill-current" />
       </div>
 
+      {/* Resumo de acompanhantes temporariamente desativado.
       <div className="bg-muted/60 w-full rounded-2xl px-4 py-3 text-left">
-        <div className="mb-2 flex items-center gap-2">
-          <Users className="text-primary h-4 w-4" />
-          <p className="text-sm font-semibold">Acompanhantes</p>
-        </div>
-        {companions.length > 0 ? (
-          <div className="space-y-1">
-            <p className="text-muted-foreground text-sm">
-              {companions.length} acompanhante(s) confirmado(s) com você:
-            </p>
-            <ul className="space-y-1 text-sm">
-              {companions.map((companion) => (
-                <li key={companion} className="text-foreground">
-                  {companion}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            Nenhum acompanhante adicionado por enquanto.
-          </p>
-        )}
+        ...
       </div>
+      */}
 
       <div className="flex w-full flex-col gap-2">
-        {onEdit && (
-          <Button variant="outline" onClick={onEdit}>
-            Gerenciar acompanhantes
-          </Button>
-        )}
-
         {onReset && (
           <Button variant="outline" size="sm" onClick={onReset}>
             Confirmar outro convidado
