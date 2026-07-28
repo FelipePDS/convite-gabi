@@ -17,37 +17,43 @@ export function FloatingActions({ musicSrc, highlight = false }: FloatingActions
         <a
           href="#evento"
           className={cn(
-            'bg-background/88 text-foreground hover:bg-background flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-sm ring-1 ring-border transition-all hover:-translate-y-0.5',
+            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm ring-1 ring-[#cfe1ee] transition-all hover:-translate-y-0.5 hover:bg-white',
             highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
           )}
           aria-label="Ir para a seção de informações"
         >
-          <Info className="h-3.5 w-3.5 text-primary" />
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-primary">
+            <Info className="h-3.5 w-3.5" strokeWidth={2.1} />
+          </span>
           <span>Informações</span>
-        </a>
-
-        <a
-          href="#presentes"
-          className={cn(
-            'bg-background/88 text-foreground hover:bg-background flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg backdrop-blur-sm ring-1 ring-border transition-all hover:-translate-y-0.5',
-            highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
-          )}
-          aria-label="Ir para a seção de presentes"
-        >
-          <Gift className="h-3.5 w-3.5 text-primary" />
-          <span>Presentear</span>
         </a>
 
         <a
           href="#confirmar"
           className={cn(
-            'bg-primary text-primary-foreground hover:bg-primary/90 flex w-[115px] items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium shadow-lg transition-all hover:-translate-y-0.5',
-            highlight && 'animate-pulse ring-2 ring-white/70 shadow-[0_0_0_10px_rgba(255,255,255,0.12)]'
+            'flex w-[124px] items-center gap-2 rounded-full bg-[#c9a84c] px-3.5 py-2 text-xs font-medium text-[#1f1603] shadow-lg ring-1 ring-[#e8c878] transition-all hover:-translate-y-0.5 hover:bg-[#d6b457]',
+            highlight && 'animate-pulse ring-2 ring-[#fff2c2] shadow-[0_0_0_10px_rgba(201,168,76,0.18)]'
           )}
           aria-label="Ir para a seção de confirmação de presença"
         >
-          <Check className="h-3.5 w-3.5" />
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[#7a5a12]">
+            <Check className="h-3.5 w-3.5" />
+          </span>
           <span>Confirmar</span>
+        </a>
+
+        <a
+          href="#presentes"
+          className={cn(
+            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm ring-1 ring-[#cfe1ee] transition-all hover:-translate-y-0.5 hover:bg-white',
+            highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
+          )}
+          aria-label="Ir para a seção de presentes"
+        >
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-primary">
+            <Gift className="h-3.5 w-3.5" />
+          </span>
+          <span>Presentear</span>
         </a>
       </div>
 

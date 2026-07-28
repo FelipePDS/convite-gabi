@@ -51,7 +51,7 @@ export function QuickActionsOnboarding({
             Eles ficam sempre visíveis para facilitar sua navegação.
           </p>
 
-          <div className="absolute right-[-2.6rem] bottom-[-1.6rem] text-[#85cdeb] drop-shadow-[0_8px_16px_rgba(9,31,60,0.35)]">
+          <div className="absolute right-[-2.2rem] bottom-[0.4rem] text-[#85cdeb] drop-shadow-[0_8px_16px_rgba(9,31,60,0.35)]">
             <ArrowDownRight className="h-14 w-14 animate-bounce" strokeWidth={2.2} />
           </div>
         </div>
