@@ -17,8 +17,8 @@ export function FloatingActions({ musicSrc, highlight = false }: FloatingActions
         <a
           href="#evento"
           className={cn(
-            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm ring-1 ring-[#cfe1ee] transition-all hover:-translate-y-0.5 hover:bg-white',
-            highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
+            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white',
+            highlight && 'animate-pulse shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
           )}
           aria-label="Ir para a seção de informações"
         >
@@ -31,12 +31,12 @@ export function FloatingActions({ musicSrc, highlight = false }: FloatingActions
         <a
           href="#confirmar"
           className={cn(
-            'flex w-[124px] items-center gap-2 rounded-full bg-[#c9a84c] px-3.5 py-2 text-xs font-medium text-[#1f1603] shadow-lg ring-1 ring-[#e8c878] transition-all hover:-translate-y-0.5 hover:bg-[#d6b457]',
-            highlight && 'animate-pulse ring-2 ring-[#fff2c2] shadow-[0_0_0_10px_rgba(201,168,76,0.18)]'
+            'flex w-[124px] items-center gap-2 rounded-full bg-primary px-3.5 py-2 text-xs font-medium text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90',
+            highlight && 'animate-pulse shadow-[0_0_0_10px_rgba(201,168,76,0.18)]'
           )}
           aria-label="Ir para a seção de confirmação de presença"
         >
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-[#7a5a12]">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center text-white">
             <Check className="h-3.5 w-3.5" />
           </span>
           <span>Confirmar</span>
@@ -45,8 +45,8 @@ export function FloatingActions({ musicSrc, highlight = false }: FloatingActions
         <a
           href="#presentes"
           className={cn(
-            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm ring-1 ring-[#cfe1ee] transition-all hover:-translate-y-0.5 hover:bg-white',
-            highlight && 'animate-pulse ring-2 ring-primary/45 shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
+            'flex w-[124px] items-center gap-2 rounded-full bg-white/92 px-3.5 py-2 text-xs font-medium text-[#0d2342] shadow-lg backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white',
+            highlight && 'animate-pulse shadow-[0_0_0_10px_rgba(255,255,255,0.08)]'
           )}
           aria-label="Ir para a seção de presentes"
         >
