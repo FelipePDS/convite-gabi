@@ -19,7 +19,6 @@ const NAV_LINKS = [
   { href: '#galeria', label: 'Galeria' },
   { href: '#confirmar', label: 'Confirmar' },
   { href: '#presentes', label: 'Presentes' },
-  { href: '#pix', label: 'PIX' },
 ]
 
 function ThemeToggle({ scrolled }: { scrolled: boolean }) {

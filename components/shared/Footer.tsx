@@ -24,7 +24,6 @@ export function Footer() {
                 { href: '#galeria', label: 'Galeria' },
                 { href: '#confirmar', label: 'Confirmar' },
                 { href: '#presentes', label: 'Presentes' },
-                { href: '#pix', label: 'PIX' },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link
