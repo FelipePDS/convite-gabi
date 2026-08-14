@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import {
   Check,
   Copy,
-  Download,
+  FileSpreadsheet,
   Link2,
   Loader2,
   Pencil,
@@ -99,6 +99,27 @@ type ManageTarget = {
   name: string
 }
 
+function getGuestStatusLabel(status: GuestStatus) {
+  if (status === 'CONFIRMED') return 'Confirmado'
+  if (status === 'DECLINED') return 'Recusado'
+  return 'Pendente'
+}
+
+function getGuestStatusTone(status: GuestStatus) {
+  if (status === 'CONFIRMED') return 'default' as const
+  if (status === 'DECLINED') return 'destructive' as const
+  return 'secondary' as const
+}
+
+function formatDate(date: string | null, includeTime = false) {
+  if (!date) return ''
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    ...(includeTime ? { timeStyle: 'short' as const } : {}),
+  }).format(new Date(date))
+}
+
 function sortGuests(guests: Guest[]) {
   const primaryGuests = guests.filter((guest) => !guest.primaryGuestId)
   const companions = guests.filter((guest) => guest.primaryGuestId)
@@ -122,8 +143,56 @@ function sortGuests(guests: Guest[]) {
   return [...grouped, ...orphanCompanions]
 }
 
-function exportCSV(guests: Guest[]) {
-  const headers = [
+async function exportGuestsSpreadsheet(guests: Guest[]) {
+  const ExcelJS = await import('exceljs')
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet('Convidados', {
+    views: [{ state: 'frozen', ySplit: 3 }],
+  })
+
+  workbook.creator = 'Convite Gabi'
+  workbook.created = new Date()
+
+  const exportDate = new Date()
+  const filenameDate = exportDate.toISOString().slice(0, 10)
+
+  worksheet.mergeCells('A1:J1')
+  const titleCell = worksheet.getCell('A1')
+  titleCell.value = 'Lista de convidados'
+  titleCell.font = {
+    name: 'Segoe UI',
+    size: 16,
+    bold: true,
+    color: { argb: 'FFFFFFFF' },
+  }
+  titleCell.alignment = { vertical: 'middle', horizontal: 'center' }
+  titleCell.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF7C3AED' },
+  }
+
+  worksheet.mergeCells('A2:J2')
+  const subtitleCell = worksheet.getCell('A2')
+  subtitleCell.value = `Exportado em ${formatDate(exportDate.toISOString(), true)} - ${guests.length} convidado(s)`
+  subtitleCell.font = { name: 'Segoe UI', size: 10, italic: true, color: { argb: 'FF475569' } }
+  subtitleCell.alignment = { vertical: 'middle', horizontal: 'left' }
+
+  worksheet.columns = [
+    { key: 'name', width: 28 },
+    { key: 'type', width: 16 },
+    { key: 'linkedTo', width: 24 },
+    { key: 'phone', width: 18 },
+    { key: 'guestCount', width: 18 },
+    { key: 'status', width: 15 },
+    { key: 'message', width: 34 },
+    { key: 'invitationCode', width: 22 },
+    { key: 'viewedAt', width: 20 },
+    { key: 'confirmedAt', width: 20 },
+  ]
+
+  const headerRow = worksheet.getRow(3)
+  headerRow.values = [
     'Nome',
     'Tipo',
     'Vinculado a',
@@ -131,32 +200,106 @@ function exportCSV(guests: Guest[]) {
     'Pessoas no convite',
     'Status',
     'Mensagem',
-    'Codigo',
+    'Codigo do convite',
+    'Visualizado em',
     'Confirmado em',
   ]
-  const rows = guests.map((guest) => [
-    guest.name,
-    guest.primaryGuestId ? 'Acompanhante' : 'Principal',
-    guest.primaryGuestName ?? '',
-    guest.phone,
-    guest.guestCount,
-    guest.status,
-    guest.message ?? '',
-    guest.invitationCode ?? '',
-    guest.confirmedAt
-      ? new Intl.DateTimeFormat('pt-BR').format(new Date(guest.confirmedAt))
-      : '',
-  ])
+  headerRow.height = 24
+  headerRow.font = { name: 'Segoe UI', bold: true, color: { argb: 'FFFFFFFF' } }
+  headerRow.alignment = { vertical: 'middle', horizontal: 'center' }
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF1F2937' },
+  }
 
-  const csv = [headers, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n')
+  for (const guest of guests) {
+    const row = worksheet.addRow({
+      name: guest.name,
+      type: guest.primaryGuestId ? 'Acompanhante' : 'Principal',
+      linkedTo: guest.primaryGuestName ?? '-',
+      phone: guest.phone,
+      guestCount: guest.guestCount,
+      status: getGuestStatusLabel(guest.status),
+      message: guest.message ?? '-',
+      invitationCode: guest.invitationCode ?? '-',
+      viewedAt: guest.viewedAt ? new Date(guest.viewedAt) : null,
+      confirmedAt: guest.confirmedAt ? new Date(guest.confirmedAt) : null,
+    })
 
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    row.height = 22
+
+    row.eachCell((cell, colNumber) => {
+      cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF111827' } }
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: colNumber === 5 ? 'center' : 'left',
+        wrapText: colNumber === 7,
+      }
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+      }
+    })
+
+    const backgroundColor = guest.primaryGuestId ? 'FFF8FAFC' : 'FFFFFFFF'
+    row.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: backgroundColor },
+      }
+    })
+
+    const statusCell = row.getCell(6)
+    const statusFill =
+      guest.status === 'CONFIRMED'
+        ? 'FFDCFCE7'
+        : guest.status === 'DECLINED'
+          ? 'FFFEE2E2'
+          : 'FFFEF3C7'
+    const statusFont =
+      guest.status === 'CONFIRMED'
+        ? 'FF166534'
+        : guest.status === 'DECLINED'
+          ? 'FF991B1B'
+          : 'FF92400E'
+
+    statusCell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: statusFill },
+    }
+    statusCell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: statusFont } }
+    statusCell.alignment = { vertical: 'middle', horizontal: 'center' }
+
+    for (const index of [9, 10]) {
+      const dateCell = row.getCell(index)
+      if (dateCell.value instanceof Date) {
+        dateCell.numFmt = 'dd/mm/yyyy hh:mm'
+        dateCell.alignment = { vertical: 'middle', horizontal: 'center' }
+      } else {
+        dateCell.value = '-'
+        dateCell.alignment = { vertical: 'middle', horizontal: 'center' }
+      }
+    }
+  }
+
+  worksheet.autoFilter = {
+    from: 'A3',
+    to: 'J3',
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = 'convidados.csv'
+  anchor.download = `convidados-${filenameDate}.xlsx`
   anchor.click()
   URL.revokeObjectURL(url)
 }
@@ -571,13 +714,14 @@ function EditGuestModal({
 export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
   const [guests, setGuests] = useState<Guest[]>(() => sortGuests(initialGuests))
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'CONFIRMED' | 'PENDING'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | GuestStatus>('ALL')
   const [createOpen, setCreateOpen] = useState(false)
   const [shareGuest, setShareGuest] = useState<{ name: string; invitationCode: string } | null>(null)
   const [manageGuest, setManageGuest] = useState<ManageTarget | null>(null)
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingGuestId, setDeletingGuestId] = useState<string | null>(null)
   const [generatingCode, setGeneratingCode] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   const {
     register,
@@ -612,6 +756,34 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
       }),
     [guests, search, statusFilter]
   )
+
+  const summary = useMemo(
+    () => ({
+      total: filtered.length,
+      confirmed: filtered.filter((guest) => guest.status === 'CONFIRMED').length,
+      pending: filtered.filter((guest) => guest.status === 'PENDING').length,
+      declined: filtered.filter((guest) => guest.status === 'DECLINED').length,
+    }),
+    [filtered]
+  )
+
+  const handleExport = async () => {
+    if (filtered.length === 0) {
+      toast.error('Nenhum convidado para exportar com os filtros atuais.')
+      return
+    }
+
+    setIsExporting(true)
+
+    try {
+      await exportGuestsSpreadsheet(filtered)
+      toast.success('Planilha exportada com sucesso!')
+    } catch {
+      toast.error('Não foi possível exportar a planilha agora.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const handleGenerateInvite = async (guest: Guest) => {
     setGeneratingCode(guest.id)
@@ -794,58 +966,91 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex gap-2">
-            <div className="relative">
-              <Search className="text-muted-foreground absolute left-2.5 top-2.5 h-4 w-4" />
-              <Input
-                placeholder="Buscar..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="w-48 pl-8"
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todos</SelectItem>
-                <SelectItem value="CONFIRMED">Confirmados</SelectItem>
-                <SelectItem value="PENDING">Pendentes</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="rounded-2xl border border-border/70 bg-muted/20 p-4 shadow-sm">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-semibold">Gerencie, filtre e exporte a lista de convidados</p>
+                <p className="text-muted-foreground text-sm">
+                  A exportação gera um arquivo Excel com colunas ajustadas, cabeçalho e datas formatadas.
+                </p>
+              </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">{filtered.length} resultado(s)</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => exportCSV(filtered)}
-              className="gap-1.5"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Exportar CSV</span>
-            </Button>
-            <Button
-              size="sm"
-              className="gap-1.5"
-              onClick={() => {
-                reset({ name: '', phone: '', companionNames: [] })
-                setCreateOpen(true)
-              }}
-            >
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Criar convidado</span>
-            </Button>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="rounded-full px-3 py-1">
+                  {summary.total} resultado(s)
+                </Badge>
+                <Badge variant="default" className="rounded-full px-3 py-1">
+                  {summary.confirmed} confirmados
+                </Badge>
+                <Badge variant="secondary" className="rounded-full px-3 py-1">
+                  {summary.pending} pendentes
+                </Badge>
+                {summary.declined > 0 && (
+                  <Badge variant="destructive" className="rounded-full px-3 py-1">
+                    {summary.declined} recusados
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 xl:min-w-[420px]">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    placeholder="Buscar por nome, telefone ou convite principal..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="h-10 bg-background pl-9"
+                  />
+                </div>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
+                >
+                  <SelectTrigger className="h-10 w-full bg-background sm:w-44">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Todos os status</SelectItem>
+                    <SelectItem value="CONFIRMED">Confirmados</SelectItem>
+                    <SelectItem value="PENDING">Pendentes</SelectItem>
+                    <SelectItem value="DECLINED">Recusados</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  disabled={isExporting || filtered.length === 0}
+                  className="h-10 gap-2 bg-background sm:min-w-[190px]"
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileSpreadsheet className="h-4 w-4" />
+                  )}
+                  <span>{isExporting ? 'Exportando...' : 'Exportar Excel'}</span>
+                </Button>
+                <Button
+                  className="h-10 gap-2 sm:min-w-[190px]"
+                  onClick={() => {
+                    reset({ name: '', phone: '', companionNames: [] })
+                    setCreateOpen(true)
+                  }}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Criar convidado</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border">
+        <div className="overflow-x-auto rounded-2xl border border-border/70 bg-background shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
@@ -872,7 +1077,10 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                   const isPrimary = !isCompanion
 
                   return (
-                    <TableRow key={guest.id}>
+                    <TableRow
+                      key={guest.id}
+                      className={isCompanion ? 'bg-muted/20 hover:bg-muted/35' : 'hover:bg-muted/25'}
+                    >
                       <TableCell>
                         <div className={isCompanion ? 'pl-4' : ''}>
                           <p className="font-medium">{isCompanion ? `↳ ${guest.name}` : guest.name}</p>
@@ -884,10 +1092,10 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">{guest.phone}</TableCell>
-                      <TableCell className="hidden md:table-cell">{guest.guestCount}</TableCell>
+                      <TableCell className="hidden md:table-cell text-center">{guest.guestCount}</TableCell>
                       <TableCell>
-                        <Badge variant={guest.status === 'CONFIRMED' ? 'default' : 'secondary'}>
-                          {guest.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
+                        <Badge variant={getGuestStatusTone(guest.status)}>
+                          {getGuestStatusLabel(guest.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground hidden max-w-[160px] truncate text-sm lg:table-cell">
@@ -903,9 +1111,7 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                         )}
                       </TableCell>
                       <TableCell className="text-muted-foreground hidden text-xs sm:table-cell">
-                        {guest.confirmedAt
-                          ? new Intl.DateTimeFormat('pt-BR').format(new Date(guest.confirmedAt))
-                          : '-'}
+                        {guest.confirmedAt ? formatDate(guest.confirmedAt) : '-'}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-1">
