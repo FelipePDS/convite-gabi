@@ -11,7 +11,6 @@ import {
   FileSpreadsheet,
   Link2,
   Loader2,
-  MessageCircleWarning,
   Pencil,
   Search,
   Share2,
@@ -100,11 +99,6 @@ type ManageTarget = {
   name: string
 }
 
-type ShareGuest = {
-  name: string
-  invitationCode: string
-}
-
 function getGuestStatusLabel(status: GuestStatus) {
   if (status === 'CONFIRMED') return 'Confirmado'
   if (status === 'DECLINED') return 'Recusado'
@@ -147,20 +141,6 @@ function sortGuests(guests: Guest[]) {
   )
 
   return [...grouped, ...orphanCompanions]
-}
-
-function buildInviteUrl(invitationCode: string) {
-  if (typeof window === 'undefined') {
-    return `/invite/${invitationCode}`
-  }
-
-  return `${window.location.origin}/invite/${invitationCode}`
-}
-
-function buildRsvpReminderWhatsappText(name: string, inviteUrl: string) {
-  return encodeURIComponent(
-    `Ol\u00e1, ${name}! Confirme ou recuse seu convite at\u00e9 01 de setembro, pois depois disso o buffet fecha a lista. Pelo mesmo link voc\u00ea tamb\u00e9m pode presentear a aniversariante: ${inviteUrl}`
-  )
 }
 
 async function exportGuestsSpreadsheet(guests: Guest[]) {
@@ -331,13 +311,16 @@ function ShareInviteModal({
 }: {
   open: boolean
   onClose: () => void
-  guest: ShareGuest | null
+  guest: { name: string; invitationCode: string } | null
 }) {
   const [copied, setCopied] = useState(false)
 
   if (!guest) return null
 
-  const inviteUrl = buildInviteUrl(guest.invitationCode)
+  const inviteUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/invite/${guest.invitationCode}`
+      : `/invite/${guest.invitationCode}`
 
   const whatsappText = encodeURIComponent(
     `Olá, *${guest.name}*!\n\nVocê foi convidado para uma celebração especial do aniversário de *15 anos da Gaby*.\n\nPedimos, por gentileza, que *confirme sua presença até o dia 01 de setembro*, pois o buffet será contratado de acordo com o número de convidados confirmados.\n\nNeste link você pode confirmar sua presença e presentear a aniversariante:\n${inviteUrl}`
@@ -733,7 +716,7 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | GuestStatus>('ALL')
   const [createOpen, setCreateOpen] = useState(false)
-  const [shareGuest, setShareGuest] = useState<ShareGuest | null>(null)
+  const [shareGuest, setShareGuest] = useState<{ name: string; invitationCode: string } | null>(null)
   const [manageGuest, setManageGuest] = useState<ManageTarget | null>(null)
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingGuestId, setDeletingGuestId] = useState<string | null>(null)
@@ -823,16 +806,6 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
       )
     )
     setShareGuest({ name: guest.name, invitationCode })
-  }
-
-  const handleSendRsvpReminder = (guest: Guest) => {
-    if (!guest.invitationCode) {
-      return
-    }
-
-    const inviteUrl = buildInviteUrl(guest.invitationCode)
-    const whatsappText = buildRsvpReminderWhatsappText(guest.name, inviteUrl)
-    window.open(`https://api.whatsapp.com/send?text=${whatsappText}`, '_blank', 'noopener,noreferrer')
   }
 
   const onCreateSubmit = async (data: CreateData) => {
@@ -1188,17 +1161,6 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                               )}
                             </button>
                           ) : null}
-
-                          {isPrimary && guest.invitationCode && guest.status === 'PENDING' && (
-                            <button
-                              title="Enviar lembrete pelo WhatsApp"
-                              aria-label={`Enviar lembrete pelo WhatsApp para ${guest.name}`}
-                              onClick={() => handleSendRsvpReminder(guest)}
-                              className="text-muted-foreground hover:text-primary rounded p-1 transition-colors"
-                            >
-                              <MessageCircleWarning className="h-4 w-4" />
-                            </button>
-                          )}
 
                           <button
                             title="Excluir convidado"

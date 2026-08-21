@@ -1,5 +1,4 @@
 import prisma from '@/lib/db'
-import { reservedGiftPresets } from '@/lib/gift-presets'
 
 export type GiftData = {
   id: string
@@ -11,17 +10,6 @@ export type GiftData = {
   status: 'AVAILABLE' | 'RESERVED'
   canUndoReservation: boolean
 }
-
-const fallbackGifts: GiftData[] = reservedGiftPresets.map((gift, index) => ({
-  id: `preset-reserved-${index + 1}`,
-  name: gift.name,
-  description: gift.description,
-  imageUrl: gift.imageUrl,
-  purchaseUrl: gift.purchaseUrl,
-  price: gift.price,
-  status: gift.status,
-  canUndoReservation: false,
-}))
 
 export async function getGifts(invitationCode?: string | null): Promise<GiftData[]> {
   try {
@@ -47,7 +35,7 @@ export async function getGifts(invitationCode?: string | null): Promise<GiftData
       },
     })
 
-    const mappedGifts = gifts.map((gift) => ({
+    return gifts.map((gift) => ({
       id: gift.id,
       name: gift.name,
       description: gift.description ?? null,
@@ -62,9 +50,7 @@ export async function getGifts(invitationCode?: string | null): Promise<GiftData
         gift.purchases[0]?.provider === 'manual_reservation' &&
         gift.purchases[0]?.status === 'APPROVED',
     }))
-
-    return mappedGifts.length > 0 ? mappedGifts : fallbackGifts
   } catch {
-    return fallbackGifts
+    return []
   }
 }

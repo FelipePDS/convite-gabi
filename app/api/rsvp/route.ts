@@ -2,17 +2,14 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/db'
 
-const attendanceSchema = z.enum(['CONFIRMED', 'DECLINED'])
-
 const apiSchema = z.object({
   name: z.string().min(2).max(100),
   phone: z.string().min(10).max(20),
-  attendance: attendanceSchema,
   companionAttendance: z
     .array(
       z.object({
         id: z.string().min(1),
-        status: attendanceSchema.optional(),
+        attending: z.boolean(),
       })
     )
     .max(19)
@@ -22,15 +19,15 @@ const apiSchema = z.object({
 })
 
 function normalizeCompanionAttendance(
-  companions: { id: string; status?: 'CONFIRMED' | 'DECLINED' }[] | undefined
+  companions: { id: string; attending: boolean }[] | undefined
 ) {
-  const unique = new Map<string, 'CONFIRMED' | 'DECLINED' | undefined>()
+  const unique = new Map<string, boolean>()
 
   for (const companion of companions ?? []) {
-    unique.set(companion.id, companion.status)
+    unique.set(companion.id, companion.attending)
   }
 
-  return [...unique.entries()].map(([id, status]) => ({ id, status }))
+  return [...unique.entries()].map(([id, attending]) => ({ id, attending }))
 }
 
 export async function POST(req: Request) {
@@ -38,13 +35,13 @@ export async function POST(req: Request) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'Corpo da requisicao invalido' }, { status: 400 })
+    return NextResponse.json({ error: 'Corpo da requisição inválido' }, { status: 400 })
   }
 
   const parsed = apiSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Dados invalidos', details: parsed.error.flatten().fieldErrors },
+      { error: 'Dados inválidos', details: parsed.error.flatten().fieldErrors },
       { status: 422 }
     )
   }
@@ -54,13 +51,12 @@ export async function POST(req: Request) {
 
   try {
     const response = await prisma.$transaction(async (tx) => {
-      const isConfirmed = parsed.data.attendance === 'CONFIRMED'
       const baseData = {
         name: parsed.data.name,
         phone: parsed.data.phone,
         message: parsed.data.message ?? null,
-        status: parsed.data.attendance,
-        confirmedAt: isConfirmed ? new Date() : null,
+        status: 'CONFIRMED' as const,
+        confirmedAt: new Date(),
         primaryGuestId: null,
       }
 
@@ -76,7 +72,9 @@ export async function POST(req: Request) {
           guestId = existing.id
           await tx.guest.update({
             where: { id: existing.id },
-            data: baseData,
+            data: {
+              ...baseData,
+            },
           })
         } else {
           const created = await tx.guest.create({
@@ -107,24 +105,28 @@ export async function POST(req: Request) {
       })
 
       const validCompanionIds = new Set(existingCompanions.map((companion) => companion.id))
-      const companionStatusById = new Map(
+      const attendanceById = new Map(
         companionAttendance
           .filter((companion) => validCompanionIds.has(companion.id))
-          .map((companion) => [companion.id, companion.status ?? 'PENDING'])
+          .map((companion) => [companion.id, companion.attending])
       )
 
       for (const companion of existingCompanions) {
-        const status = companionStatusById.get(companion.id) ?? 'PENDING'
+        const attending = attendanceById.get(companion.id) ?? false
 
         await tx.guest.update({
           where: { id: companion.id },
           data: {
             phone: parsed.data.phone,
-            status,
-            confirmedAt: status === 'CONFIRMED' ? new Date() : null,
+            status: attending ? 'CONFIRMED' : 'PENDING',
+            confirmedAt: attending ? new Date() : null,
           },
         })
       }
+
+      const confirmedCompanions = existingCompanions.filter((companion) =>
+        attendanceById.get(companion.id)
+      )
 
       await tx.guest.update({
         where: { id: guestId },
@@ -136,12 +138,12 @@ export async function POST(req: Request) {
       return {
         success: true,
         name: parsed.data.name,
-        status: parsed.data.attendance,
         companions: existingCompanions.map((companion) => ({
           id: companion.id,
           name: companion.name,
-          status: companionStatusById.get(companion.id) ?? 'PENDING',
+          status: attendanceById.get(companion.id) ? 'CONFIRMED' : 'PENDING',
         })),
+        confirmedCompanionCount: confirmedCompanions.length,
       }
     })
 
