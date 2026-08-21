@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '@/lib/db'
 
 const attendanceSchema = z.enum(['CONFIRMED', 'DECLINED'])
+type CompanionGuestStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED'
 
 const apiSchema = z.object({
   name: z.string().min(2).max(100),
@@ -107,14 +108,18 @@ export async function POST(req: Request) {
       })
 
       const validCompanionIds = new Set(existingCompanions.map((companion) => companion.id))
-      const companionStatusById = new Map(
+      const companionStatusById = new Map<string, CompanionGuestStatus>(
         companionAttendance
           .filter((companion) => validCompanionIds.has(companion.id))
-          .map((companion) => [companion.id, companion.status ?? 'PENDING'])
+          .map(
+            (companion) =>
+              [companion.id, companion.status ?? 'PENDING'] as const
+          )
       )
 
       for (const companion of existingCompanions) {
-        const status = companionStatusById.get(companion.id) ?? 'PENDING'
+        const status: CompanionGuestStatus =
+          companionStatusById.get(companion.id) ?? 'PENDING'
 
         await tx.guest.update({
           where: { id: companion.id },
