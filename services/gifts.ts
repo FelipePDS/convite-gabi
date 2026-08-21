@@ -1,4 +1,5 @@
 import prisma from '@/lib/db'
+import { reservedGiftData } from './reserved-gift-presets'
 
 export type GiftData = {
   id: string
@@ -35,7 +36,7 @@ export async function getGifts(invitationCode?: string | null): Promise<GiftData
       },
     })
 
-    return gifts.map((gift) => ({
+    const databaseGifts = gifts.map((gift) => ({
       id: gift.id,
       name: gift.name,
       description: gift.description ?? null,
@@ -50,7 +51,9 @@ export async function getGifts(invitationCode?: string | null): Promise<GiftData
         gift.purchases[0]?.provider === 'manual_reservation' &&
         gift.purchases[0]?.status === 'APPROVED',
     }))
+
+    return [...databaseGifts, ...reservedGiftData]
   } catch {
-    return []
+    return reservedGiftData
   }
 }
