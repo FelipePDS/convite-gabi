@@ -14,7 +14,7 @@ import { Check, Loader2, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RsvpSuccess } from './RsvpSuccess'
-import { rsvpSchema } from '@/lib/validations/rsvp'
+import { rsvpSchema, type RsvpFormData, type RsvpFormInput } from '@/lib/validations/rsvp'
 import { cn } from '@/lib/utils'
 
 const inputBase =
@@ -73,18 +73,6 @@ type CompanionPrefill = {
   name: string
   status: GuestStatus
   confirmedAt: string | null
-}
-
-type RsvpFormValues = {
-  name: string
-  phone: string
-  attendance?: GuestResponseStatus
-  companionAttendance: {
-    id: string
-    status?: GuestResponseStatus
-  }[]
-  message?: string
-  invitationCode?: string
 }
 
 interface RsvpFormProps {
@@ -184,7 +172,7 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
     setError,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<RsvpFormValues>({
+  } = useForm<RsvpFormInput, unknown, RsvpFormData>({
     resolver: zodResolver(rsvpSchema),
     defaultValues: {
       name: prefill?.name ?? '',
@@ -214,7 +202,7 @@ export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
     status: watchedCompanionAttendance?.[index]?.status ?? companion.status,
   }))
 
-  const onSubmit = async (data: RsvpFormValues) => {
+  const onSubmit = async (data: RsvpFormData) => {
     const res = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
