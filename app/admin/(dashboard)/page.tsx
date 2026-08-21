@@ -13,11 +13,11 @@ import { Badge } from '@/components/ui/badge'
 
 async function getStats() {
   try {
-    const [total, confirmed, pending, reservedGifts, recentGuests] = await Promise.all([
+    const [total, confirmed, pending, giftPurchases, recentGuests] = await Promise.all([
       prisma.guest.count(),
       prisma.guest.count({ where: { status: 'CONFIRMED' } }),
       prisma.guest.count({ where: { status: 'PENDING' } }),
-      prisma.gift.count({ where: { status: 'RESERVED' } }),
+      prisma.giftPurchase.count(),
       prisma.guest.findMany({
         orderBy: { createdAt: 'desc' },
         take: 8,
@@ -31,20 +31,20 @@ async function getStats() {
         },
       }),
     ])
-    return { total, confirmed, pending, reservedGifts, recentGuests }
+    return { total, confirmed, pending, giftPurchases, recentGuests }
   } catch {
-    return { total: 0, confirmed: 0, pending: 0, reservedGifts: 0, recentGuests: [] }
+    return { total: 0, confirmed: 0, pending: 0, giftPurchases: 0, recentGuests: [] }
   }
 }
 
 export default async function AdminOverviewPage() {
-  const { total, confirmed, pending, reservedGifts, recentGuests } = await getStats()
+  const { total, confirmed, pending, giftPurchases, recentGuests } = await getStats()
 
   const stats = [
     { label: 'Total de convites', value: total, icon: Users, color: 'text-blue-500' },
     { label: 'Presencas confirmadas', value: confirmed, icon: UserCheck, color: 'text-green-500' },
     { label: 'Pendentes', value: pending, icon: Clock, color: 'text-amber-500' },
-    { label: 'Presentes reservados', value: reservedGifts, icon: Gift, color: 'text-primary' },
+    { label: 'Compras registradas', value: giftPurchases, icon: Gift, color: 'text-primary' },
   ]
 
   return (
