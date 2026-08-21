@@ -49,7 +49,7 @@ type Gift = {
   reservedByName: string | null
   reservedByPhone: string | null
   reservedAt: string | null
-  purchaseCount: number
+  reservationCount: number
   latestPurchase: GiftPurchase | null
   purchases: GiftPurchase[]
 }
@@ -103,7 +103,7 @@ function normalizeGift(payload: Partial<Gift> & {
     reservedByName: payload.reservedByName ?? null,
     reservedByPhone: payload.reservedByPhone ?? null,
     reservedAt: payload.reservedAt ?? null,
-    purchaseCount: payload.purchaseCount ?? 0,
+    reservationCount: payload.reservationCount ?? (payload.status === 'RESERVED' ? 1 : 0),
     latestPurchase: payload.latestPurchase ?? null,
     purchases: payload.purchases ?? [],
   } satisfies Gift
@@ -151,6 +151,9 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
   const [editing, setEditing] = useState<Gift | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [detailsGift, setDetailsGift] = useState<Gift | null>(null)
+
+  const reservedCount = gifts.filter((gift) => gift.status === 'RESERVED').length
+  const availableCount = gifts.length - reservedCount
 
   const {
     register,
@@ -229,9 +232,20 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">{gifts.length} presente(s)</p>
-        <Button onClick={openCreate} size="sm" className="gap-1.5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <p className="text-muted-foreground text-sm">{gifts.length} presente(s)</p>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="default" className="rounded-full px-3 py-1">
+              {reservedCount} reservado(s)
+            </Badge>
+            <Badge variant="secondary" className="rounded-full px-3 py-1">
+              {availableCount} disponivel(is)
+            </Badge>
+          </div>
+        </div>
+
+        <Button onClick={openCreate} size="sm" className="gap-1.5 self-start">
           <Plus className="h-4 w-4" /> Novo presente
         </Button>
       </div>
@@ -244,7 +258,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
               <TableHead>Nome</TableHead>
               <TableHead>Preco</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Compras</TableHead>
+              <TableHead>Reservas</TableHead>
               <TableHead>Ultima compra</TableHead>
               <TableHead className="text-right">Acoes</TableHead>
             </TableRow>
@@ -311,7 +325,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">
-                    {gift.purchaseCount === 0 ? 'Nenhuma' : `${gift.purchaseCount} registrada(s)`}
+                    {gift.reservationCount === 0 ? 'Nenhuma' : `${gift.reservationCount} reservada(s)`}
                   </TableCell>
                   <TableCell className="text-sm">
                     {gift.latestPurchase ? (

@@ -29,7 +29,7 @@ export default async function AdminGiftsPage() {
     reservedByName: gift.reservedByName ?? null,
     reservedByPhone: gift.reservedByPhone ?? null,
     reservedAt: gift.reservedAt?.toISOString() ?? null,
-    purchaseCount: gift.purchases.length,
+    reservationCount: gift.status === 'RESERVED' ? 1 : 0,
     latestPurchase: gift.purchases[0]
       ? {
           id: gift.purchases[0].id,

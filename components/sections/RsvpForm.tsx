@@ -14,7 +14,7 @@ import { Check, Loader2, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RsvpSuccess } from './RsvpSuccess'
-import { rsvpSchema, type RsvpFormData } from '@/lib/validations/rsvp'
+import { rsvpSchema } from '@/lib/validations/rsvp'
 import { cn } from '@/lib/utils'
 
 const inputBase =
@@ -65,11 +65,26 @@ function Field({
   )
 }
 
+type GuestStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED'
+type GuestResponseStatus = Exclude<GuestStatus, 'PENDING'>
+
 type CompanionPrefill = {
   id: string
   name: string
-  status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+  status: GuestStatus
   confirmedAt: string | null
+}
+
+type RsvpFormValues = {
+  name: string
+  phone: string
+  attendance?: GuestResponseStatus
+  companionAttendance: {
+    id: string
+    status?: GuestResponseStatus
+  }[]
+  message?: string
+  invitationCode?: string
 }
 
 interface RsvpFormProps {
@@ -77,27 +92,80 @@ interface RsvpFormProps {
   prefill?: {
     name?: string
     phone?: string
+    status?: GuestStatus
     invitationCode: string
     companions?: CompanionPrefill[]
   }
-  initialConfirmedName?: string
 }
 
 type RsvpResponse = {
   success: boolean
   name: string
+  status: GuestStatus
   companions?: {
     id: string
     name: string
-    status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
+    status: GuestStatus
   }[]
 }
 
-export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormProps) {
-  const [confirmedName, setConfirmedName] = useState<string | null>(initialConfirmedName ?? null)
-  const [showSuccess, setShowSuccess] = useState(Boolean(initialConfirmedName))
+function getStatusLabel(status: GuestStatus) {
+  if (status === 'CONFIRMED') return 'Presenca confirmada'
+  if (status === 'DECLINED') return 'Convite recusado'
+  return 'Resposta pendente'
+}
+
+function getStatusBadgeVariant(status: GuestStatus) {
+  if (status === 'CONFIRMED') return 'default' as const
+  if (status === 'DECLINED') return 'destructive' as const
+  return 'secondary' as const
+}
+
+function ResponseButtons({
+  value,
+  onChange,
+  confirmLabel,
+  declineLabel,
+}: {
+  value?: GuestResponseStatus
+  onChange: (status: GuestResponseStatus) => void
+  confirmLabel: string
+  declineLabel: string
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button
+        type="button"
+        size="sm"
+        variant={value === 'CONFIRMED' ? 'default' : 'outline'}
+        className="gap-2"
+        onClick={() => onChange('CONFIRMED')}
+      >
+        <Check className="h-4 w-4" />
+        {confirmLabel}
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant={value === 'DECLINED' ? 'destructive' : 'outline'}
+        className="gap-2"
+        onClick={() => onChange('DECLINED')}
+      >
+        <X className="h-4 w-4" />
+        {declineLabel}
+      </Button>
+    </div>
+  )
+}
+
+export function RsvpForm({ eventDate, prefill }: RsvpFormProps) {
+  const initialStatus = prefill?.status ?? 'PENDING'
+
+  const [savedName, setSavedName] = useState<string | null>(prefill?.name ?? null)
+  const [savedStatus, setSavedStatus] = useState<GuestStatus>(initialStatus)
+  const [showSuccess, setShowSuccess] = useState(initialStatus !== 'PENDING')
   const [savedCompanions, setSavedCompanions] = useState<
-    { id: string; name: string; status: 'PENDING' | 'CONFIRMED' | 'DECLINED' }[]
+    { id: string; name: string; status: GuestStatus }[]
   >(
     (prefill?.companions ?? []).map((companion) => ({
       id: companion.id,
@@ -116,17 +184,23 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     setError,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<RsvpFormData>({
+  } = useForm<RsvpFormValues>({
     resolver: zodResolver(rsvpSchema),
     defaultValues: {
       name: prefill?.name ?? '',
       phone: prefill?.phone ?? '',
+      attendance: initialStatus === 'PENDING' ? undefined : initialStatus,
       companionAttendance: companionDefinitions.map((companion) => ({
         id: companion.id,
-        attending: companion.status === 'CONFIRMED',
+        status: companion.status === 'PENDING' ? undefined : companion.status,
       })),
       invitationCode: prefill?.invitationCode,
     },
+  })
+
+  const watchedAttendance = useWatch({
+    control,
+    name: 'attendance',
   })
 
   const watchedCompanionAttendance = useWatch({
@@ -134,12 +208,13 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     name: 'companionAttendance',
   })
 
+  const displayedGuestStatus = watchedAttendance ?? initialStatus
   const displayedCompanions = companionDefinitions.map((companion, index) => ({
     ...companion,
-    attending: watchedCompanionAttendance?.[index]?.attending ?? companion.status === 'CONFIRMED',
+    status: watchedCompanionAttendance?.[index]?.status ?? companion.status,
   }))
 
-  const onSubmit = async (data: RsvpFormData) => {
+  const onSubmit = async (data: RsvpFormValues) => {
     const res = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -149,24 +224,26 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     const json = (await res.json()) as RsvpResponse & { error?: string }
 
     if (!res.ok) {
-      setError('root', { message: json.error ?? 'Erro ao confirmar. Tente novamente.' })
+      setError('root', { message: json.error ?? 'Erro ao salvar resposta. Tente novamente.' })
       return
     }
 
-    setConfirmedName(json.name ?? data.name)
+    setSavedName(json.name ?? data.name)
+    setSavedStatus(json.status)
     setSavedCompanions(json.companions ?? [])
     setShowSuccess(true)
     window.dispatchEvent(new CustomEvent('invite-rsvp-confirmed'))
   }
 
-  if (showSuccess && confirmedName) {
+  if (showSuccess && savedName) {
     return (
       <RsvpSuccess
-        guestName={confirmedName}
+        guestName={savedName}
+        guestStatus={savedStatus}
         eventDate={eventDate}
         companions={savedCompanions}
         onEdit={
-          allowCompanionManagement
+          prefill
             ? () => {
                 setShowSuccess(false)
               }
@@ -176,14 +253,17 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           prefill
             ? undefined
             : () => {
-                setConfirmedName(null)
+                setSavedName(null)
+                setSavedStatus('PENDING')
                 setSavedCompanions([])
                 setShowSuccess(false)
                 reset({
                   name: '',
                   phone: '',
+                  attendance: undefined,
                   companionAttendance: [],
                   invitationCode: undefined,
+                  message: undefined,
                 })
               }
         }
@@ -203,6 +283,38 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
         noValidate
         className="w-full max-w-lg space-y-6"
       >
+        <div className="space-y-3 rounded-2xl border border-dashed px-4 py-4">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold">Sua resposta</p>
+            <p className="text-muted-foreground text-sm">
+              Escolha se voce vai confirmar a presenca ou recusar este convite.
+            </p>
+          </div>
+
+          <Controller
+            control={control}
+            name="attendance"
+            render={({ field }) => (
+              <ResponseButtons
+                value={field.value}
+                onChange={field.onChange}
+                confirmLabel="Confirmar presenca"
+                declineLabel="Recusar convite"
+              />
+            )}
+          />
+
+          <Badge variant={getStatusBadgeVariant(displayedGuestStatus)}>
+            {getStatusLabel(displayedGuestStatus)}
+          </Badge>
+
+          {errors.attendance && (
+            <p className="text-destructive text-xs">
+              Escolha se voce vai confirmar ou recusar o convite.
+            </p>
+          )}
+        </div>
+
         <Field id="rsvp-name" label="Nome completo" error={errors.name?.message}>
           <ElegantInput
             id="rsvp-name"
@@ -232,7 +344,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
                 <p className="text-sm font-semibold">Acompanhantes do seu convite</p>
               </div>
               <p className="text-muted-foreground text-sm">
-                Aqui você pode confirmar ou cancelar a presença dos seus acompanhantes.
+                Aqui voce pode confirmar ou recusar a presenca de cada acompanhante.
               </p>
             </div>
 
@@ -240,44 +352,28 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
               {displayedCompanions.map((companion, index) => (
                 <div
                   key={companion.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border px-3 py-3"
+                  className="flex flex-col gap-3 rounded-xl border px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-medium">{companion.name}</p>
-                    <Badge variant={companion.attending ? 'default' : 'secondary'}>
-                      {companion.attending ? 'Presença confirmada' : 'Presença pendente'}
+                    <Badge variant={getStatusBadgeVariant(companion.status)}>
+                      {getStatusLabel(companion.status)}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-start gap-2 sm:items-end">
                     <input type="hidden" {...register(`companionAttendance.${index}.id`)} />
                     <Controller
                       control={control}
-                      name={`companionAttendance.${index}.attending`}
-                      render={({ field }) =>
-                        field.value ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => field.onChange(false)}
-                          >
-                            <X className="h-4 w-4" />
-                            Cancelar
-                          </Button>
-                        ) : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="gap-2"
-                            onClick={() => field.onChange(true)}
-                          >
-                            <Check className="h-4 w-4" />
-                            Confirmar
-                          </Button>
-                        )
-                      }
+                      name={`companionAttendance.${index}.status`}
+                      render={({ field }) => (
+                        <ResponseButtons
+                          value={field.value}
+                          onChange={field.onChange}
+                          confirmLabel="Confirmar"
+                          declineLabel="Recusar"
+                        />
+                      )}
                     />
                   </div>
                 </div>
@@ -317,12 +413,14 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Salvando confirmação...
+              Salvando resposta...
             </>
-          ) : confirmedName ? (
-            'Atualizar confirmação'
+          ) : watchedAttendance === 'DECLINED' ? (
+            'Recusar convite'
+          ) : savedStatus !== 'PENDING' ? (
+            'Atualizar resposta'
           ) : (
-            <>✦ Confirmar presença</>
+            'Confirmar presenca'
           )}
         </Button>
       </motion.form>

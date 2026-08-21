@@ -63,7 +63,7 @@ export default async function InvitePage({ params }: Props) {
     await trackInviteView(guest.id)
   }
 
-  const alreadyConfirmed = guest.status === 'CONFIRMED'
+  const hasResponded = guest.status !== 'PENDING'
   const giftBuyer =
     guest.invitationCode && guest.phone
       ? {
@@ -77,7 +77,7 @@ export default async function InvitePage({ params }: Props) {
     <>
       <div
         id="invite-onboarding-state"
-        data-confirmed={alreadyConfirmed ? 'true' : 'false'}
+        data-confirmed={hasResponded ? 'true' : 'false'}
         hidden
         aria-hidden
       />
@@ -89,10 +89,10 @@ export default async function InvitePage({ params }: Props) {
         prefill={{
           name: guest.name,
           phone: guest.phone ?? undefined,
+          status: guest.status,
           invitationCode: guest.invitationCode,
           companions: guest.companions,
         }}
-        initialConfirmedName={alreadyConfirmed ? guest.name : undefined}
       />
       <GiftsSection
         buyer={giftBuyer}

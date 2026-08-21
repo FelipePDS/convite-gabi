@@ -9,6 +9,7 @@ interface RsvpSectionProps {
   prefill?: {
     name?: string
     phone?: string
+    status?: 'PENDING' | 'CONFIRMED' | 'DECLINED'
     invitationCode: string
     companions?: {
       id: string
@@ -17,10 +18,9 @@ interface RsvpSectionProps {
       confirmedAt: string | null
     }[]
   }
-  initialConfirmedName?: string
 }
 
-export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectionProps) {
+export function RsvpSection({ event, prefill }: RsvpSectionProps) {
   return (
     <section
       id="confirmar"
@@ -31,7 +31,7 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
         <div className="text-center">
           <SectionReveal>
             <p className="text-primary mb-3 text-xs font-medium uppercase tracking-[0.3em]">
-              ✦ Confirmação ✦
+              Confirmacao
             </p>
           </SectionReveal>
 
@@ -40,16 +40,16 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
               id="rsvp-title"
               className="font-heading text-4xl font-bold tracking-tight md:text-5xl"
             >
-              Confirme sua presença
+              Confirme sua presenca
             </h2>
           </SectionReveal>
 
           <SectionReveal delay={0.15}>
             <p className="text-muted-foreground mt-4 max-w-md">
-              Sua presença tornará esse dia ainda mais especial para nós.
+              Confirme sua presenca ou avise se nao podera comparecer.
               <br />
-              Pedimos, por gentileza, que confirme sua presença até o dia{' '}
-              <strong>01 de setembro</strong>, pois o buffet será contratado de acordo com o número de convidados confirmados.
+              Pedimos, por gentileza, que responda ate o dia{' '}
+              <strong>01 de setembro</strong>, pois o buffet sera contratado de acordo com o numero de convidados confirmados.
             </p>
           </SectionReveal>
         </div>
@@ -58,7 +58,6 @@ export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectio
           <RsvpForm
             eventDate={event.eventDate}
             prefill={prefill}
-            initialConfirmedName={initialConfirmedName}
           />
         </SectionReveal>
       </div>
