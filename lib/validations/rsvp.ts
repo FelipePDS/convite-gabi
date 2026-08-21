@@ -28,5 +28,4 @@ export const rsvpSchema = z.object({
   }
 })
 
-export type RsvpFormInput = z.input<typeof rsvpSchema>
-export type RsvpFormData = z.output<typeof rsvpSchema>
+export type RsvpFormData = z.input<typeof rsvpSchema>
