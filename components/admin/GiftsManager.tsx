@@ -49,8 +49,6 @@ type Gift = {
   reservedByName: string | null
   reservedByPhone: string | null
   reservedAt: string | null
-  purchaseCount: number
-  latestPurchase: GiftPurchase | null
   purchases: GiftPurchase[]
 }
 
@@ -103,8 +101,6 @@ function normalizeGift(payload: Partial<Gift> & {
     reservedByName: payload.reservedByName ?? null,
     reservedByPhone: payload.reservedByPhone ?? null,
     reservedAt: payload.reservedAt ?? null,
-    purchaseCount: payload.purchaseCount ?? 0,
-    latestPurchase: payload.latestPurchase ?? null,
     purchases: payload.purchases ?? [],
   } satisfies Gift
 }
@@ -151,6 +147,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
   const [editing, setEditing] = useState<Gift | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [detailsGift, setDetailsGift] = useState<Gift | null>(null)
+  const reservedGiftsCount = gifts.filter((gift) => gift.status === 'RESERVED').length
 
   const {
     register,
@@ -229,12 +226,22 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">{gifts.length} presente(s)</p>
+      <section
+        aria-label="Resumo dos presentes"
+        className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+      >
+        <div className="rounded-xl border px-4 py-3">
+          <p className="text-muted-foreground text-sm">Total de presentes</p>
+          <p className="mt-1 text-2xl font-bold">{gifts.length}</p>
+        </div>
+        <div className="rounded-xl border px-4 py-3">
+          <p className="text-muted-foreground text-sm">Presentes reservados</p>
+          <p className="mt-1 text-2xl font-bold">{reservedGiftsCount}</p>
+        </div>
         <Button onClick={openCreate} size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" /> Novo presente
         </Button>
-      </div>
+      </section>
 
       <div className="mt-4 rounded-xl border">
         <Table>
@@ -244,15 +251,13 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
               <TableHead>Nome</TableHead>
               <TableHead>Preco</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Compras</TableHead>
-              <TableHead>Ultima compra</TableHead>
               <TableHead className="text-right">Acoes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {gifts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground py-10 text-center">
+                <TableCell colSpan={5} className="text-muted-foreground py-10 text-center">
                   <GiftIcon className="mx-auto mb-2 h-8 w-8 opacity-30" />
                   Nenhum presente cadastrado.
                 </TableCell>
@@ -310,33 +315,13 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {gift.purchaseCount === 0 ? 'Nenhuma' : `${gift.purchaseCount} registrada(s)`}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {gift.latestPurchase ? (
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div className="font-medium">{gift.latestPurchase.buyerName}</div>
-                          <Badge variant={getPurchaseBadgeVariant(gift.latestPurchase.status)}>
-                            {getPurchaseLabel(gift.latestPurchase.status)}
-                          </Badge>
-                        </div>
-                        <div className="text-muted-foreground text-xs">
-                          {formatDateTime(gift.latestPurchase.createdAt)}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon-sm"
                         onClick={() => setDetailsGift(gift)}
-                        title="Ver compras"
+                        title="Ver historico de pagamentos"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -426,7 +411,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {detailsGift ? `Compras de ${detailsGift.name}` : 'Compras do presente'}
+              {detailsGift ? `Historico de pagamentos: ${detailsGift.name}` : 'Historico de pagamentos'}
             </DialogTitle>
           </DialogHeader>
 
@@ -519,7 +504,7 @@ export function GiftsManager({ initialGifts }: GiftsManagerProps) {
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm">
-                  Ainda nao ha compras registradas para este presente.
+                  Ainda nao ha tentativas de pagamento para este presente.
                 </p>
               )}
             </div>

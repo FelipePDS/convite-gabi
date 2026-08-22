@@ -29,24 +29,6 @@ export default async function AdminGiftsPage() {
     reservedByName: gift.reservedByName ?? null,
     reservedByPhone: gift.reservedByPhone ?? null,
     reservedAt: gift.reservedAt?.toISOString() ?? null,
-    purchaseCount: gift.purchases.length,
-    latestPurchase: gift.purchases[0]
-      ? {
-          id: gift.purchases[0].id,
-          buyerName: gift.purchases[0].buyerName,
-          buyerPhone: gift.purchases[0].buyerPhone,
-          invitationCode: gift.purchases[0].invitationCode,
-          amount: gift.purchases[0].amount ?? null,
-          status: gift.purchases[0].status,
-          statusDetail: gift.purchases[0].statusDetail ?? null,
-          provider: gift.purchases[0].provider ?? null,
-          providerPaymentId: gift.purchases[0].providerPaymentId ?? null,
-          paymentMethodId: gift.purchases[0].paymentMethodId ?? null,
-          paymentTypeId: gift.purchases[0].paymentTypeId ?? null,
-          paidAt: gift.purchases[0].paidAt?.toISOString() ?? null,
-          createdAt: gift.purchases[0].createdAt.toISOString(),
-        }
-      : null,
     purchases: gift.purchases.map((purchase) => ({
       id: purchase.id,
       buyerName: purchase.buyerName,
@@ -69,7 +51,7 @@ export default async function AdminGiftsPage() {
       <div>
         <h1 className="font-heading text-2xl font-bold">Presentes</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Gerencie os itens e acompanhe as compras registradas por convite.
+          Gerencie os itens e acompanhe as reservas por convite.
         </p>
       </div>
       <GiftsManager initialGifts={gifts} />
