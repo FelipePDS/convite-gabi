@@ -1089,7 +1089,7 @@ export function GuestsTable({ guests: initialGuests }: { guests: Guest[] }) {
                               ? `Acompanhante de ${guest.primaryGuestName ?? 'convidado principal'}`
                               : 'Convidado principal'}
                           </p>
-                          <p className="text-muted-foreground mt-2 line-clamp-3 whitespace-normal break-words text-xs lg:hidden">
+                          <p className="text-muted-foreground mt-2 line-clamp-8 whitespace-normal break-words text-xs lg:hidden">
                             <span className="font-medium text-foreground">Mensagem: </span>
                             {guest.message ?? 'Sem mensagem'}
                           </p>
