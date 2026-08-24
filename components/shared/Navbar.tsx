@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { href: '#sobre', label: 'Sobre' },
   { href: '#evento', label: 'Evento' },
+  { href: '#recados', label: 'Recados' },
   { href: '#galeria', label: 'Galeria' },
   { href: '#confirmar', label: 'Confirmar' },
   { href: '#presentes', label: 'Presentes' },

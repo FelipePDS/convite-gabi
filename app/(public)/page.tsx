@@ -9,6 +9,8 @@ import { EventInfoSection } from '@/components/sections/EventInfoSection'
 import { InviteLockedSection } from '@/components/sections/InviteLockedSection'
 import { GiftsSection } from '@/components/sections/GiftsSection'
 import { GiftsSkeleton } from '@/components/sections/GiftsSkeleton'
+import { MessageWallSection } from '@/components/sections/MessageWallSection'
+import { MessageWallSkeleton } from '@/components/sections/MessageWallSkeleton'
 
 const SHARE_IMAGE = '/images/capa.jpeg'
 
@@ -50,6 +52,9 @@ export default async function HomePage() {
       <InviteLockedSection contact={event.contact} />
       <Suspense fallback={<GiftsSkeleton />}>
         <GiftsSection />
+      </Suspense>
+      <Suspense fallback={<MessageWallSkeleton />}>
+        <MessageWallSection />
       </Suspense>
       <Suspense fallback={<GallerySkeleton />}>
         <GallerySection />
