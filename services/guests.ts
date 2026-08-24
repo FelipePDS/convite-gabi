@@ -11,6 +11,7 @@ export type GuestInviteData = {
   id: string
   name: string
   phone: string | null
+  message: string | null
   status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
   invitationCode: string
   guestCount: number
@@ -37,6 +38,7 @@ export async function getGuestByInviteCode(code: string): Promise<GuestInviteDat
       id: guest.id,
       name: guest.name,
       phone: guest.phone ?? null,
+      message: guest.message ?? null,
       guestCount: guest.guestCount,
       companions: companions.map((companion) => ({
         id: companion.id,

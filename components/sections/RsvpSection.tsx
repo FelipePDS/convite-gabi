@@ -9,6 +9,7 @@ interface RsvpSectionProps {
   prefill?: {
     name?: string
     phone?: string
+    message?: string
     invitationCode: string
     companions?: {
       id: string

@@ -77,6 +77,7 @@ interface RsvpFormProps {
   prefill?: {
     name?: string
     phone?: string
+    message?: string
     invitationCode: string
     companions?: CompanionPrefill[]
   }
@@ -121,6 +122,7 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
     defaultValues: {
       name: prefill?.name ?? '',
       phone: prefill?.phone ?? '',
+      message: prefill?.message ?? '',
       companionAttendance: companionDefinitions.map((companion) => ({
         id: companion.id,
         attending: companion.status === 'CONFIRMED',
@@ -165,13 +167,9 @@ export function RsvpForm({ eventDate, prefill, initialConfirmedName }: RsvpFormP
         guestName={confirmedName}
         eventDate={eventDate}
         companions={savedCompanions}
-        onEdit={
-          allowCompanionManagement
-            ? () => {
-                setShowSuccess(false)
-              }
-            : undefined
-        }
+        onEdit={() => {
+          setShowSuccess(false)
+        }}
         onReset={
           prefill
             ? undefined

@@ -9,6 +9,7 @@ import { GallerySection } from '@/components/sections/GallerySection'
 import { EventInfoSection } from '@/components/sections/EventInfoSection'
 import { RsvpSection } from '@/components/sections/RsvpSection'
 import { GiftsSection } from '@/components/sections/GiftsSection'
+import { MessageWallSection } from '@/components/sections/MessageWallSection'
 
 interface Props {
   params: Promise<{ code: string }>
@@ -89,6 +90,7 @@ export default async function InvitePage({ params }: Props) {
         prefill={{
           name: guest.name,
           phone: guest.phone ?? undefined,
+          message: guest.message ?? undefined,
           invitationCode: guest.invitationCode,
           companions: guest.companions,
         }}
@@ -97,6 +99,7 @@ export default async function InvitePage({ params }: Props) {
       <GiftsSection
         buyer={giftBuyer}
       />
+      <MessageWallSection />
       <GallerySection />
       {/* <PixSection event={event} /> */}
     </>

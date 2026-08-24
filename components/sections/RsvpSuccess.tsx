@@ -117,7 +117,7 @@ export function RsvpSuccess({
       <div className="flex w-full flex-col gap-2">
         {onEdit && (
           <Button variant="outline" onClick={onEdit}>
-            Gerenciar acompanhantes
+            Editar confirmação
           </Button>
         )}
 
