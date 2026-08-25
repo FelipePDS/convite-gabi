@@ -11,7 +11,7 @@ export async function getGuestMessages(): Promise<GuestMessageData[]> {
   try {
     const guests = await prisma.guest.findMany({
       where: {
-        status: { in: ['CONFIRMED', 'DECLINED'] },
+        status: 'CONFIRMED',
         primaryGuestId: null,
         message: { not: null },
       },

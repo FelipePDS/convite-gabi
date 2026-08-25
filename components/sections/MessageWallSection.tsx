@@ -29,7 +29,7 @@ export async function MessageWallSection() {
 
         <SectionReveal delay={0.15}>
           <p className="text-muted-foreground mb-12 max-w-lg">
-            Mensagens carinhosas deixadas pelos convidados ao responder o convite.
+            Mensagens carinhosas deixadas pelos convidados ao confirmar presença.
           </p>
         </SectionReveal>
 

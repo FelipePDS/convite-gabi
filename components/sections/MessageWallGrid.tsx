@@ -64,7 +64,7 @@ export function MessageWallGrid({ messages }: MessageWallGridProps) {
       <div className="text-muted-foreground flex flex-col items-center gap-3 py-16 text-center">
         <MessageCircleHeart className="h-12 w-12 opacity-30" />
         <p className="text-sm">
-          Ainda não há recados por aqui. Responda seu convite e deixe o primeiro!
+          Ainda não há recados por aqui. Confirme sua presença e deixe o primeiro!
         </p>
       </div>
     )
