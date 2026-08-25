@@ -5,12 +5,11 @@ import prisma from '@/lib/db'
 const apiSchema = z.object({
   name: z.string().min(2).max(100),
   phone: z.string().min(10).max(20),
-  attending: z.enum(['CONFIRMED', 'DECLINED']),
   companionAttendance: z
     .array(
       z.object({
         id: z.string().min(1),
-        status: z.enum(['CONFIRMED', 'DECLINED', 'PENDING']),
+        attending: z.boolean(),
       })
     )
     .max(19)
@@ -19,18 +18,16 @@ const apiSchema = z.object({
   invitationCode: z.string().optional(),
 })
 
-type CompanionStatus = 'CONFIRMED' | 'DECLINED' | 'PENDING'
-
 function normalizeCompanionAttendance(
-  companions: { id: string; status: CompanionStatus }[] | undefined
+  companions: { id: string; attending: boolean }[] | undefined
 ) {
-  const unique = new Map<string, CompanionStatus>()
+  const unique = new Map<string, boolean>()
 
   for (const companion of companions ?? []) {
-    unique.set(companion.id, companion.status)
+    unique.set(companion.id, companion.attending)
   }
 
-  return [...unique.entries()].map(([id, status]) => ({ id, status }))
+  return [...unique.entries()].map(([id, attending]) => ({ id, attending }))
 }
 
 export async function POST(req: Request) {
@@ -58,7 +55,7 @@ export async function POST(req: Request) {
         name: parsed.data.name,
         phone: parsed.data.phone,
         message: parsed.data.message ?? null,
-        status: parsed.data.attending,
+        status: 'CONFIRMED' as const,
         confirmedAt: new Date(),
         primaryGuestId: null,
       }
@@ -108,27 +105,27 @@ export async function POST(req: Request) {
       })
 
       const validCompanionIds = new Set(existingCompanions.map((companion) => companion.id))
-      const statusById = new Map(
+      const attendanceById = new Map(
         companionAttendance
           .filter((companion) => validCompanionIds.has(companion.id))
-          .map((companion) => [companion.id, companion.status])
+          .map((companion) => [companion.id, companion.attending])
       )
 
       for (const companion of existingCompanions) {
-        const status = statusById.get(companion.id) ?? 'PENDING'
+        const attending = attendanceById.get(companion.id) ?? false
 
         await tx.guest.update({
           where: { id: companion.id },
           data: {
             phone: parsed.data.phone,
-            status,
-            confirmedAt: status === 'PENDING' ? null : new Date(),
+            status: attending ? 'CONFIRMED' : 'PENDING',
+            confirmedAt: attending ? new Date() : null,
           },
         })
       }
 
-      const confirmedCompanions = existingCompanions.filter(
-        (companion) => statusById.get(companion.id) === 'CONFIRMED'
+      const confirmedCompanions = existingCompanions.filter((companion) =>
+        attendanceById.get(companion.id)
       )
 
       await tx.guest.update({
@@ -141,11 +138,10 @@ export async function POST(req: Request) {
       return {
         success: true,
         name: parsed.data.name,
-        status: parsed.data.attending,
         companions: existingCompanions.map((companion) => ({
           id: companion.id,
           name: companion.name,
-          status: statusById.get(companion.id) ?? 'PENDING',
+          status: attendanceById.get(companion.id) ? 'CONFIRMED' : 'PENDING',
         })),
         confirmedCompanionCount: confirmedCompanions.length,
       }

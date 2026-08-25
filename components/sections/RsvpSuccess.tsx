@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Heart, HeartCrack, PartyPopper, Users } from 'lucide-react'
+import { CheckCircle2, Heart, PartyPopper, Users } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -33,28 +33,13 @@ function launchConfetti() {
   burst()
 }
 
-type AttendanceStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED'
-
-function companionStatusLabel(status: AttendanceStatus) {
-  if (status === 'CONFIRMED') return 'Confirmado'
-  if (status === 'DECLINED') return 'Recusado'
-  return 'Pendente'
-}
-
-function companionBadgeVariant(status: AttendanceStatus) {
-  if (status === 'CONFIRMED') return 'default' as const
-  if (status === 'DECLINED') return 'destructive' as const
-  return 'secondary' as const
-}
-
 interface RsvpSuccessProps {
   guestName: string
-  status: 'CONFIRMED' | 'DECLINED'
   eventDate: string
   companions?: {
     id: string
     name: string
-    status: AttendanceStatus
+    status: 'PENDING' | 'CONFIRMED' | 'DECLINED'
   }[]
   onReset?: () => void
   onEdit?: () => void
@@ -62,17 +47,14 @@ interface RsvpSuccessProps {
 
 export function RsvpSuccess({
   guestName,
-  status,
   eventDate,
   companions = [],
   onReset,
   onEdit,
 }: RsvpSuccessProps) {
-  const isConfirmed = status === 'CONFIRMED'
-
   useEffect(() => {
-    if (isConfirmed) launchConfetti()
-  }, [isConfirmed])
+    launchConfetti()
+  }, [])
 
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
     day: 'numeric',
@@ -92,44 +74,26 @@ export function RsvpSuccess({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 12 }}
-        className={
-          isConfirmed
-            ? 'bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full'
-            : 'bg-muted text-muted-foreground flex h-16 w-16 items-center justify-center rounded-full'
-        }
+        className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full"
       >
-        {isConfirmed ? <CheckCircle2 className="h-8 w-8" /> : <HeartCrack className="h-8 w-8" />}
+        <CheckCircle2 className="h-8 w-8" />
       </motion.div>
 
       <div className="space-y-2">
-        <h3 className="font-heading text-2xl font-bold">
-          {isConfirmed ? 'Presença confirmada!' : 'Resposta registrada'}
-        </h3>
-        {isConfirmed ? (
-          <p className="text-muted-foreground">
-            Que alegria, <span className="text-foreground font-semibold">{guestName}</span>!
-            <br />
-            Te esperamos no dia{' '}
-            <span className="text-foreground font-semibold">{formattedDate}</span>.
-          </p>
-        ) : (
-          <p className="text-muted-foreground">
-            Obrigado por nos avisar, <span className="text-foreground font-semibold">{guestName}</span>.
-            <br />
-            Sentiremos sua falta no dia{' '}
-            <span className="text-foreground font-semibold">{formattedDate}</span>, mas ficaremos na
-            torcida para o próximo encontro!
-          </p>
-        )}
+        <h3 className="font-heading text-2xl font-bold">Presença confirmada!</h3>
+        <p className="text-muted-foreground">
+          Que alegria, <span className="text-foreground font-semibold">{guestName}</span>!
+          <br />
+          Te esperamos no dia{' '}
+          <span className="text-foreground font-semibold">{formattedDate}</span>.
+        </p>
       </div>
 
-      {isConfirmed && (
-        <div className="text-primary flex items-center gap-2 text-sm font-medium">
-          <PartyPopper className="h-4 w-4" />
-          <span>Vai ser incrível!</span>
-          <Heart className="h-4 w-4 fill-current" />
-        </div>
-      )}
+      <div className="text-primary flex items-center gap-2 text-sm font-medium">
+        <PartyPopper className="h-4 w-4" />
+        <span>Vai ser incrível!</span>
+        <Heart className="h-4 w-4 fill-current" />
+      </div>
 
       {companions.length > 0 && (
         <div className="bg-muted/60 w-full rounded-2xl px-4 py-3 text-left">
@@ -141,8 +105,8 @@ export function RsvpSuccess({
             {companions.map((companion) => (
               <div key={companion.id} className="flex items-center justify-between gap-3">
                 <span className="text-sm">{companion.name}</span>
-                <Badge variant={companionBadgeVariant(companion.status)}>
-                  {companionStatusLabel(companion.status)}
+                <Badge variant={companion.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                  {companion.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
                 </Badge>
               </div>
             ))}
@@ -153,7 +117,7 @@ export function RsvpSuccess({
       <div className="flex w-full flex-col gap-2">
         {onEdit && (
           <Button variant="outline" onClick={onEdit}>
-            Editar resposta
+            Editar confirmação
           </Button>
         )}
 

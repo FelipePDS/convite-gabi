@@ -10,7 +10,6 @@ interface RsvpSectionProps {
     name?: string
     phone?: string
     message?: string
-    status?: 'PENDING' | 'CONFIRMED' | 'DECLINED'
     invitationCode: string
     companions?: {
       id: string
@@ -19,9 +18,10 @@ interface RsvpSectionProps {
       confirmedAt: string | null
     }[]
   }
+  initialConfirmedName?: string
 }
 
-export function RsvpSection({ event, prefill }: RsvpSectionProps) {
+export function RsvpSection({ event, prefill, initialConfirmedName }: RsvpSectionProps) {
   return (
     <section
       id="confirmar"
@@ -49,15 +49,18 @@ export function RsvpSection({ event, prefill }: RsvpSectionProps) {
             <p className="text-muted-foreground mt-4 max-w-md">
               Sua presença tornará esse dia ainda mais especial para nós.
               <br />
-              Pedimos, por gentileza, que responda até o dia{' '}
-              <strong>01 de setembro</strong> — mesmo que não possa comparecer — pois o
-              buffet será contratado de acordo com o número de convidados confirmados.
+              Pedimos, por gentileza, que confirme sua presença até o dia{' '}
+              <strong>01 de setembro</strong>, pois o buffet será contratado de acordo com o número de convidados confirmados.
             </p>
           </SectionReveal>
         </div>
 
         <SectionReveal delay={0.2} className="w-full max-w-lg">
-          <RsvpForm eventDate={event.eventDate} prefill={prefill} />
+          <RsvpForm
+            eventDate={event.eventDate}
+            prefill={prefill}
+            initialConfirmedName={initialConfirmedName}
+          />
         </SectionReveal>
       </div>
     </section>

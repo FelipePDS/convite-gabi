@@ -1,5 +1,5 @@
 import prisma from '@/lib/db'
-import { Clock, Gift, UserCheck, UserX, Users } from 'lucide-react'
+import { Clock, Gift, UserCheck, Users } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -11,27 +11,12 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
-type GuestStatus = 'PENDING' | 'CONFIRMED' | 'DECLINED'
-
-function getGuestStatusLabel(status: GuestStatus) {
-  if (status === 'CONFIRMED') return 'Confirmado'
-  if (status === 'DECLINED') return 'Recusado'
-  return 'Pendente'
-}
-
-function getGuestStatusTone(status: GuestStatus) {
-  if (status === 'CONFIRMED') return 'default' as const
-  if (status === 'DECLINED') return 'destructive' as const
-  return 'secondary' as const
-}
-
 async function getStats() {
   try {
-    const [total, confirmed, pending, declined, reservedGifts, recentGuests] = await Promise.all([
+    const [total, confirmed, pending, reservedGifts, recentGuests] = await Promise.all([
       prisma.guest.count(),
       prisma.guest.count({ where: { status: 'CONFIRMED' } }),
       prisma.guest.count({ where: { status: 'PENDING' } }),
-      prisma.guest.count({ where: { status: 'DECLINED' } }),
       prisma.gift.count({ where: { status: 'RESERVED' } }),
       prisma.guest.findMany({
         orderBy: { createdAt: 'desc' },
@@ -46,20 +31,19 @@ async function getStats() {
         },
       }),
     ])
-    return { total, confirmed, pending, declined, reservedGifts, recentGuests }
+    return { total, confirmed, pending, reservedGifts, recentGuests }
   } catch {
-    return { total: 0, confirmed: 0, pending: 0, declined: 0, reservedGifts: 0, recentGuests: [] }
+    return { total: 0, confirmed: 0, pending: 0, reservedGifts: 0, recentGuests: [] }
   }
 }
 
 export default async function AdminOverviewPage() {
-  const { total, confirmed, pending, declined, reservedGifts, recentGuests } = await getStats()
+  const { total, confirmed, pending, reservedGifts, recentGuests } = await getStats()
 
   const stats = [
     { label: 'Total de convites', value: total, icon: Users, color: 'text-blue-500' },
     { label: 'Presencas confirmadas', value: confirmed, icon: UserCheck, color: 'text-green-500' },
     { label: 'Pendentes', value: pending, icon: Clock, color: 'text-amber-500' },
-    { label: 'Recusados', value: declined, icon: UserX, color: 'text-destructive' },
     { label: 'Presentes reservados', value: reservedGifts, icon: Gift, color: 'text-primary' },
   ]
 
@@ -70,7 +54,7 @@ export default async function AdminOverviewPage() {
         <p className="text-muted-foreground mt-1 text-sm">Resumo do evento</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, color }) => (
           <Card key={label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -86,12 +70,12 @@ export default async function AdminOverviewPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Respostas recentes</CardTitle>
+          <CardTitle className="text-base">Confirmacoes recentes</CardTitle>
         </CardHeader>
         <CardContent>
           {recentGuests.length === 0 ? (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              Nenhuma resposta ainda.
+              Nenhuma confirmacao ainda.
             </p>
           ) : (
             <Table>
@@ -111,8 +95,8 @@ export default async function AdminOverviewPage() {
                     <TableCell>{guest.phone}</TableCell>
                     <TableCell>{guest.guestCount}</TableCell>
                     <TableCell>
-                      <Badge variant={getGuestStatusTone(guest.status as GuestStatus)}>
-                        {getGuestStatusLabel(guest.status as GuestStatus)}
+                      <Badge variant={guest.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                        {guest.status === 'CONFIRMED' ? 'Confirmado' : 'Pendente'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
